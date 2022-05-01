@@ -1,0 +1,1005 @@
+
+In [1]:
+%reload_ext sql
+%config PPMagics.fastload = True
+import pandas as pd
+import numpy as np
+from decimal import Decimal
+import datetime
+from datetime import datetime, timedelta, date
+import logging as log
+
+
+import matplotlib.pyplot as plt
+In [ ]:
+%%teradata_simba
+select session
+In [3]:
+ALERTED = False
+COUNT = 0
+#being used under flow_peak
+In [4]:
+def run_query(sql, framed=False):
+    """
+    Simple function to execute a query
+    Option to return results as a dataframe
+    """
+    query = %teradata_simba $sql
+    
+    if framed:
+        df = query.DataFrame()
+        return df
+In [5]:
+sql_table2 = """
+select * from PP_FDCC_TABLES.alert_count_hourly
+order by alert_timestamp desc
+"""
+table2 = run_query(sql_table2, framed = True)
+HTML(value='')
+HTML(value='')
+HTML(value='')
+In [6]:
+table2.head()
+Out[6]:
+	alert_timestamp	alert_name	alert_count
+0	2022-02-06 09:00:00	VID Account Count Velocity Alert @OnboardingGC	3
+1	2022-02-06 09:00:00	VID Session Count Trend Alert?@OnboardingGC	162
+2	2022-02-06 09:00:00	VID Account Count Trend Alert @OnboardingGC	163
+3	2022-02-06 09:00:00	CMID(NotEC) Account Count Trend Alert @Login	396
+4	2022-02-06 08:00:00	VID Account Count Velocity Alert @OnboardingGC	3
+In [7]:
+def get_table3(df):
+    
+    df3_1 = df.pivot(index='alert_timestamp', columns='alert_name', values='alert_count')
+    df3_2 = df3_1.fillna(0)
+    df3_2['alert_timestamp']= df3_2.index
+    
+    cols = list(df3_2.columns)
+    cols = [cols[-1]] + cols[:-1]
+    df3_3 = df3_2[cols]   
+    
+    df3_4 = df3_3.sort_values(by=['alert_timestamp'], ascending=False)
+    df3_5 = df3_4.reset_index(drop=True)
+    df3_5.columns = df3_5.columns.str.replace('?', ' ')
+    
+    df3_6 = df3_5.set_index(['alert_timestamp']).sort_index(ascending=True).asfreq(freq ='H', fill_value = 0)
+    df3_7 = df3_6.rolling('12H').sum()
+    df3_8 = df3_7.sort_index(ascending=False)
+    df3_9 = df3_8.iloc[::12, :]
+    df3_9.reset_index(inplace=True)
+    df3_10 = df3_9.rename(columns = {'index':'alert_timestamp'})
+    table3 = df3_10
+    
+    return table3
+In [8]:
+table3 = get_table3(table2)
+table3.head()
+Out[8]:
+alert_name	alert_timestamp	Account Creation IP Mismatch Volume Alert - by Geo Country	Artificial Typing Speed Account Count Velocity Alert @PostSignup	CMID(EC) Account Count Trend Alert @Login	CMID(EC) Account Count Trend Alert @PostSignup	CMID(EC) Account Count Velocity Alert @Login	CMID(EC) Account Count Velocity Alert @PostSignup	CMID(EC) Session Count Trend Alert @Login	CMID(EC) Session Count Velocity Alert @Login	CMID(NotEC) Account Count Trend Alert @Login	...	VID Account Count Velocity Alert @OnboardingGC	VID Account Count Velocity Alert @PostSignup	VID Session Count Trend Alert @Login	VID Session Count Trend Alert @OnboardingGC	VID Session Count Velocity Alert @Login	VID Session Count Velocity Alert @OnboardingGC	VM Volume @Login	VM Volume Alert	VPN Volume @Login	fdcc_emulator_login
+0	2022-02-06 09:00:00	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	1427.0	...	36.0	0.0	0.0	392.0	0.0	10.0	0.0	0.0	0.0	0.0
+1	2022-02-05 21:00:00	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	2679.0	...	25.0	58.0	161607.0	240.0	5322.0	24.0	0.0	0.0	0.0	0.0
+2	2022-02-05 09:00:00	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	1394.0	...	42.0	0.0	0.0	118.0	7009.0	82.0	0.0	0.0	0.0	0.0
+3	2022-02-04 21:00:00	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	2995.0	...	56.0	0.0	0.0	413.0	1355.0	49.0	0.0	0.0	0.0	0.0
+4	2022-02-04 09:00:00	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	2482.0	...	51.0	0.0	0.0	804.0	553.0	60.0	0.0	0.0	0.0	0.0
+5 rows × 62 columns
+In [9]:
+table3_1=table3.iloc[1: , :]
+table3_1.head()
+# df = df.iloc[1: , :]
+Out[9]:
+alert_name	alert_timestamp	Account Creation IP Mismatch Volume Alert - by Geo Country	Artificial Typing Speed Account Count Velocity Alert @PostSignup	CMID(EC) Account Count Trend Alert @Login	CMID(EC) Account Count Trend Alert @PostSignup	CMID(EC) Account Count Velocity Alert @Login	CMID(EC) Account Count Velocity Alert @PostSignup	CMID(EC) Session Count Trend Alert @Login	CMID(EC) Session Count Velocity Alert @Login	CMID(NotEC) Account Count Trend Alert @Login	...	VID Account Count Velocity Alert @OnboardingGC	VID Account Count Velocity Alert @PostSignup	VID Session Count Trend Alert @Login	VID Session Count Trend Alert @OnboardingGC	VID Session Count Velocity Alert @Login	VID Session Count Velocity Alert @OnboardingGC	VM Volume @Login	VM Volume Alert	VPN Volume @Login	fdcc_emulator_login
+1	2022-02-05 21:00:00	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	2679.0	...	25.0	58.0	161607.0	240.0	5322.0	24.0	0.0	0.0	0.0	0.0
+2	2022-02-05 09:00:00	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	1394.0	...	42.0	0.0	0.0	118.0	7009.0	82.0	0.0	0.0	0.0	0.0
+3	2022-02-04 21:00:00	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	2995.0	...	56.0	0.0	0.0	413.0	1355.0	49.0	0.0	0.0	0.0	0.0
+4	2022-02-04 09:00:00	0.0	0.0	0.0	0.0	0.0	0.0	0.0	0.0	2482.0	...	51.0	0.0	0.0	804.0	553.0	60.0	0.0	0.0	0.0	0.0
+5	2022-02-03 21:00:00	0.0	0.0	0.0	0.0	0.0	26.0	0.0	0.0	3002.0	...	37.0	57.0	0.0	600.0	275.0	66.0	0.0	0.0	0.0	0.0
+5 rows × 62 columns
+In [10]:
+name_list = list(table3)
+name_list
+Out[10]:
+['alert_timestamp',
+ 'Account Creation IP Mismatch Volume Alert - by Geo Country',
+ 'Artificial Typing Speed Account Count Velocity Alert @PostSignup ',
+ 'CMID(EC) Account Count Trend Alert @Login',
+ 'CMID(EC) Account Count Trend Alert @PostSignup',
+ 'CMID(EC) Account Count Velocity Alert @Login',
+ 'CMID(EC) Account Count Velocity Alert @PostSignup',
+ 'CMID(EC) Session Count Trend Alert @Login',
+ 'CMID(EC) Session Count Velocity Alert @Login',
+ 'CMID(NotEC) Account Count Trend Alert @Login',
+ 'CMID(NotEC) Account Count Trend Alert @PostSignup',
+ 'CMID(NotEC) Account Count Velocity Alert @Login',
+ 'CMID(NotEC) Account Count Velocity Alert @PostSignup',
+ 'CMID(NotEC) Session Count Trend Alert @Login',
+ 'CMID(NotEC) Session Count Velocity Alert @Login',
+ 'GEO Mismatch Account Count Alert @Login',
+ 'GEO Mismatch Session Count Alert @AddCC',
+ 'GEO Mismatch Session Count Alert @Login',
+ 'GEO Mismatch Session Count at Bin Level Trend Alert @AddCC',
+ 'GEO Mismatch Session Count at Bin Level Velocity Alert @AddCC',
+ 'GEO Mismatch Session Count at Routing Number Level Trend Alert @WithdrawalAttempt',
+ 'GEO Mismatch Session Count at Routing Number Level Velocity Alert @Deposit ',
+ 'GEO Mismatch Session Count at Routing Number Level Velocity Alert @WithdrawalAttempt',
+ 'IP CC Hash Count Trend Alert @AddCC',
+ 'IP CC Hash Count Velocity Alert @AddCC',
+ 'LinkerID Account Count Trend Alert @Login',
+ 'LinkerID Account Count Velocity Alert @Login',
+ 'LinkerID Session Count Trend Alert @Login',
+ 'LinkerID Session Count Velocity Alert @Login',
+ 'SubscriberID Account Count Velocity Alert @Login',
+ 'SubscriberID Account Count Velocity Alert @PostSignup',
+ 'SubscriberID Session Count Trend Alert @Login',
+ 'SubscriberID Session Count Velocity Alert @Login',
+ 'Supercookie Account Count Trend Alert @Login',
+ 'Supercookie Account Count Trend Alert @OnboardingGC',
+ 'Supercookie Account Count Trend Alert @PostSignup',
+ 'Supercookie Account Count Velocity Alert @Login',
+ 'Supercookie Account Count Velocity Alert @OnboardingGC',
+ 'Supercookie Account Count Velocity Alert @PostSignup',
+ 'Supercookie Session Count Trend Alert @Login',
+ 'Supercookie Session Count Trend Alert @OnboardingGC',
+ 'Supercookie Session Count Velocity Alert @Login',
+ 'Supercookie Session Count Velocity Alert @OnboardingGC',
+ 'Traffic alert cntry --- HoldsAssessment',
+ 'Traffic alert xclick_cntry_plus --- HoldsAssessment',
+ 'VID Account Count Trend Alert @AddCC',
+ 'VID Account Count Trend Alert @ConsolidatedFunding',
+ 'VID Account Count Trend Alert @Login',
+ 'VID Account Count Trend Alert @OnboardingGC',
+ 'VID Account Count Velocity Alert @AddCC',
+ 'VID Account Count Velocity Alert @ConsolidatedFunding',
+ 'VID Account Count Velocity Alert @Login',
+ 'VID Account Count Velocity Alert @OnboardingGC',
+ 'VID Account Count Velocity Alert @PostSignup',
+ 'VID Session Count Trend Alert @Login',
+ 'VID Session Count Trend Alert @OnboardingGC',
+ 'VID Session Count Velocity Alert @Login',
+ 'VID Session Count Velocity Alert @OnboardingGC',
+ 'VM Volume @Login',
+ 'VM Volume Alert',
+ 'VPN Volume @Login',
+ 'fdcc_emulator_login']
+In [11]:
+def thresholding_algo(y, lag, threshold, influence):
+    
+#     y is alert_count in the next get_peaks function;
+#     lag, threshold, influence are all parameters in flow_peak
+    
+#     signals is used to judge in each point is peak or valley, 
+#     after judge the treshold is more than 3
+#     then judge y[i] is more or less than mean.y[0:7] or not, 
+#     if more, it will be defind as a peak
+#     if less, it will be defind as a valley
+#     in the begin, signals = [0,0,0,0,0,0,0,0,0,0,0,0,0...0,0,0]
+#     in the result, signals = array([0,0,0,1,0,0,1,0,0....0,1,0])
+#     in most cases, signals will be 0, because not more than 3sd, one ABS diff of y[i] and y[0:7] is more than 3 sd,
+#     then to judge it is 1 or -1
+    
+    signals = np.zeros(len(y))             
+    filteredY = np.array(y)
+    avgFilter = [0]*len(y)
+    stdFilter = [0]*len(y)
+    avgFilter[lag - 1] = np.mean(y[0:lag])    # when lag is 7, as the aler_court in desc, means the alert_count value in most recent 7 timestamp
+    stdFilter[lag - 1] = np.std(y[0:lag])
+
+    for i in range(lag, len(y)):
+        
+        if abs(y[i] - avgFilter[i-1]) > threshold * stdFilter [i-1]:   # when treshold is 3 means, the |Y[i] - mean.Y[0:7]| is more than 3 sd.Y[0:7]
+           
+            if y[i] > avgFilter[i-1]:
+                signals[i] = 1               
+            else:
+                signals[i] = -1              
+
+            filteredY[i] = influence * y[i] + (1 - influence) * filteredY[i-1]
+            avgFilter[i] = np.mean(filteredY[(i+1-lag):(i+1)])
+            stdFilter[i] = np.std(filteredY[(i+1-lag):(i+1)])
+        else:
+            signals[i] = 0
+            filteredY[i] = y[i]
+            avgFilter[i] = np.mean(filteredY[(i+1-lag):(i+1)])
+            stdFilter[i] = np.std(filteredY[(i+1-lag):(i+1)])
+
+    return dict(signals = np.asarray(signals),
+                avgFilter = np.asarray(avgFilter),
+                stdFilter = np.asarray(stdFilter))
+ 
+#     input is 4,including alert_count and other 3 parameters, which will be designed in flow_peak
+#     output is 3 arrays
+#     signals used to judge it is potential peak or valley by 1 and -1
+    
+#     ie.: y=[3,5,2,4,20]
+#     if influence=1
+#     filteretedY[i]=y[i]
+#     filteretedY= y 
+#     if influence=-1
+#     filteretedY[i]= 2 filtertedY[i-1] - y[i]   ??????means what?? if 1, all y; if -1, all this value
+    
+#     in whichever case, the other 2 outputs will be array of each 7 duration of filteredY avg and std
+    
+#     the output, only signals is used in get_peaks function, the other output not being used. They are potentially 
+#     to be used in get_peak function in the original drafts.
+In [ ]:
+
+In [12]:
+def get_peaks(query_dict, imageName, force_plot=False):
+    
+#     input is 3, query_dict is the flow in peak_flow, get_peaks is used under peak_flow, there pass query_dict = low 
+#     by calling pet_peaks function.
+#     also get imageName = "img/{}_layer.png".format(flow['layer']) under peak_flow, is the second pair in the dict, 
+#     imageName is the value of 'alert_name' in second pair
+    
+    lag = query_dict['lag']
+    threshold = query_dict['threshold']
+    influence = query_dict['influence']
+    column = query_dict['column']
+    
+    df = get_table3(table2)     
+   
+#     need to pass table3 to df here, df = get_table3(df)
+#     get_table3() is function of getting table3
+   
+                           
+    alert_count = df[column].tolist()
+    
+    d = df['alert_timestamp'].tolist()   # d is timestamp column transfer to list, d is time
+    
+#     d = df.index.tolist()
+
+    alert_count = np.array(alert_count).astype(np.float)
+    
+    result = thresholding_algo(alert_count, lag=lag, threshold=threshold, influence=influence)
+                                          # go back to line 
+                                          # return dict(signals = np.asarray(signals),
+                                                    # avgFilter = np.asarray(avgFilter),
+                                                    # stdFilter = np.asarray(stdFilter))
+    
+    if result['signals'][-1]==1 or force_plot:
+        
+        plot_peaks(query_dict,result,alert_count, d, imageName)  # d = df['alert_date'].tolist()
+        # refering the next plot_peaks function, alert_count = t in the next function
+        
+        return [d[-1],query_dict['alert_name'],alert_count[-1], alert_count[-8:], d[-8:]]
+ 
+#  return is 5 values
+#  d is timestamp list, 
+#  last timestamp, alert_name is second pair in peak_flow, last alert_count, last 7 alert_count, last 7 timestamp
+In [13]:
+# with 30 points in this function__original
+
+def plot_peaks(query_dict,result,t,d, imageName):    # d = df['alert_date'].tolist()    
+#     input are 7
+#     1.query_dict is in peak_flow, same as in get_peak function
+#     2.result is the 3 array for result in thresholding_algo
+#     3.t is alert_count refering the line above return in get_peaks function.
+#     4.d is d = df['alert_date'].tolist() under get_peaks function
+#     5.ts_peaks is timestamp value in d, being appended to ts_peaks, by for loop and judge for signal under get_peaks
+#     6.peaks is aler_count value, or 1 and -1 value??????? it is appended in the same way as ts_peak
+#     7.get imageName = "img/{}_layer.png".format(flow['layer']) under peak_flow, is the second pair in the dict, 
+#     imageName is the value of 'alert_name' in second pair
+    y = list(table3[query_dict['alert_name']])
+    y1 = list(map(int, y))
+    Y = np.array(y1)
+    avg_y = np.mean(Y[1:15])  
+    std_y = np.std(Y[1:15])
+  
+    plt.figure(figsize=(16, 8))                           # d = df['alert_date'].tolist()   
+    plt.plot(d[0:60], t[0:60], label='Alert_count')  # should we change a name of the visual title?? t is alert_account
+    plt.plot(d[0], t[0],"ro", label='Peak')
+    plt.legend(fontsize=12)
+    plt.ylabel('Alert Count', fontsize=14)
+    plt.xlabel('Timestamp',fontsize=14)
+    plt.title(query_dict['alert_name'], fontsize=18)
+    plt.axhline(y = avg_y + query_dict['threshold']* std_y, color = 'b', linestyle = 'dotted')
+    plt.savefig(imageName, bbox_inches = "tight")
+    
+    return plt
+In [14]:
+def format_query(txt,*args):
+    """
+    Format query text based on *args
+    """
+    formatted = txt.format(*args)
+    return formatted
+In [17]:
+
+In [15]:
+alert_name_list = list(table3)[1:]
+len(alert_name_list)
+Out[15]:
+61
+In [16]:
+alert_name_list
+Out[16]:
+['Account Creation IP Mismatch Volume Alert - by Geo Country',
+ 'Artificial Typing Speed Account Count Velocity Alert @PostSignup ',
+ 'CMID(EC) Account Count Trend Alert @Login',
+ 'CMID(EC) Account Count Trend Alert @PostSignup',
+ 'CMID(EC) Account Count Velocity Alert @Login',
+ 'CMID(EC) Account Count Velocity Alert @PostSignup',
+ 'CMID(EC) Session Count Trend Alert @Login',
+ 'CMID(EC) Session Count Velocity Alert @Login',
+ 'CMID(NotEC) Account Count Trend Alert @Login',
+ 'CMID(NotEC) Account Count Trend Alert @PostSignup',
+ 'CMID(NotEC) Account Count Velocity Alert @Login',
+ 'CMID(NotEC) Account Count Velocity Alert @PostSignup',
+ 'CMID(NotEC) Session Count Trend Alert @Login',
+ 'CMID(NotEC) Session Count Velocity Alert @Login',
+ 'GEO Mismatch Account Count Alert @Login',
+ 'GEO Mismatch Session Count Alert @AddCC',
+ 'GEO Mismatch Session Count Alert @Login',
+ 'GEO Mismatch Session Count at Bin Level Trend Alert @AddCC',
+ 'GEO Mismatch Session Count at Bin Level Velocity Alert @AddCC',
+ 'GEO Mismatch Session Count at Routing Number Level Trend Alert @WithdrawalAttempt',
+ 'GEO Mismatch Session Count at Routing Number Level Velocity Alert @Deposit ',
+ 'GEO Mismatch Session Count at Routing Number Level Velocity Alert @WithdrawalAttempt',
+ 'IP CC Hash Count Trend Alert @AddCC',
+ 'IP CC Hash Count Velocity Alert @AddCC',
+ 'LinkerID Account Count Trend Alert @Login',
+ 'LinkerID Account Count Velocity Alert @Login',
+ 'LinkerID Session Count Trend Alert @Login',
+ 'LinkerID Session Count Velocity Alert @Login',
+ 'SubscriberID Account Count Velocity Alert @Login',
+ 'SubscriberID Account Count Velocity Alert @PostSignup',
+ 'SubscriberID Session Count Trend Alert @Login',
+ 'SubscriberID Session Count Velocity Alert @Login',
+ 'Supercookie Account Count Trend Alert @Login',
+ 'Supercookie Account Count Trend Alert @OnboardingGC',
+ 'Supercookie Account Count Trend Alert @PostSignup',
+ 'Supercookie Account Count Velocity Alert @Login',
+ 'Supercookie Account Count Velocity Alert @OnboardingGC',
+ 'Supercookie Account Count Velocity Alert @PostSignup',
+ 'Supercookie Session Count Trend Alert @Login',
+ 'Supercookie Session Count Trend Alert @OnboardingGC',
+ 'Supercookie Session Count Velocity Alert @Login',
+ 'Supercookie Session Count Velocity Alert @OnboardingGC',
+ 'Traffic alert cntry --- HoldsAssessment',
+ 'Traffic alert xclick_cntry_plus --- HoldsAssessment',
+ 'VID Account Count Trend Alert @AddCC',
+ 'VID Account Count Trend Alert @ConsolidatedFunding',
+ 'VID Account Count Trend Alert @Login',
+ 'VID Account Count Trend Alert @OnboardingGC',
+ 'VID Account Count Velocity Alert @AddCC',
+ 'VID Account Count Velocity Alert @ConsolidatedFunding',
+ 'VID Account Count Velocity Alert @Login',
+ 'VID Account Count Velocity Alert @OnboardingGC',
+ 'VID Account Count Velocity Alert @PostSignup',
+ 'VID Session Count Trend Alert @Login',
+ 'VID Session Count Trend Alert @OnboardingGC',
+ 'VID Session Count Velocity Alert @Login',
+ 'VID Session Count Velocity Alert @OnboardingGC',
+ 'VM Volume @Login',
+ 'VM Volume Alert',
+ 'VPN Volume @Login',
+ 'fdcc_emulator_login']
+In [18]:
+mylist = alert_name_list
+
+peek_flow_test1 = []
+
+lag = 14
+threshold = 1.5
+influence = 1
+mode1 = 'Peaks'
+mode2 = 'Valley'
+
+for i in range(len(alert_name_list)):
+    dict = {}
+    dict['column'] = mylist[i]
+    dict['alert_name'] = mylist[i]
+    dict['lag'] = lag
+    dict['threshold'] = threshold
+    dict['influence'] = influence
+    if influence == 1:
+        dict['mode'] = mode1
+    else:
+        dict['mode'] = mode2
+    peek_flow_test1.append(dict)
+    del(dict)
+
+print(peek_flow_test1[:5])
+[{'threshold': 1.5, 'column': 'Account Creation IP Mismatch Volume Alert - by Geo Country', 'mode': 'Peaks', 'lag': 14, 'alert_name': 'Account Creation IP Mismatch Volume Alert - by Geo Country', 'influence': 1}, {'threshold': 1.5, 'column': 'Artificial Typing Speed Account Count Velocity Alert @PostSignup ', 'mode': 'Peaks', 'lag': 14, 'alert_name': 'Artificial Typing Speed Account Count Velocity Alert @PostSignup ', 'influence': 1}, {'threshold': 1.5, 'column': 'CMID(EC) Account Count Trend Alert @Login', 'mode': 'Peaks', 'lag': 14, 'alert_name': 'CMID(EC) Account Count Trend Alert @Login', 'influence': 1}, {'threshold': 1.5, 'column': 'CMID(EC) Account Count Trend Alert @PostSignup', 'mode': 'Peaks', 'lag': 14, 'alert_name': 'CMID(EC) Account Count Trend Alert @PostSignup', 'influence': 1}, {'threshold': 1.5, 'column': 'CMID(EC) Account Count Velocity Alert @Login', 'mode': 'Peaks', 'lag': 14, 'alert_name': 'CMID(EC) Account Count Velocity Alert @Login', 'influence': 1}, {'threshold': 1.5, 'column': 'CMID(EC) Account Count Velocity Alert @PostSignup', 'mode': 'Peaks', 'lag': 14, 'alert_name': 'CMID(EC) Account Count Velocity Alert @PostSignup', 'influence': 1}, {'threshold': 1.5, 'column': 'CMID(EC) Session Count Trend Alert @Login', 'mode': 'Peaks', 'lag': 14, 'alert_name': 'CMID(EC) Session Count Trend Alert @Login', 'influence': 1}, {'threshold': 1.5, 'column': 'CMID(EC) Session Count Velocity Alert @Login', 'mode': 'Peaks', 'lag': 14, 'alert_name': 'CMID(EC) Session Count Velocity Alert @Login', 'influence': 1}, {'threshold': 1.5, 'column': 'CMID(NotEC) Account Count Trend Alert @Login', 'mode': 'Peaks', 'lag': 14, 'alert_name': 'CMID(NotEC) Account Count Trend Alert @Login', 'influence': 1}, {'threshold': 1.5, 'column': 'CMID(NotEC) Account Count Trend Alert @PostSignup', 'mode': 'Peaks', 'lag': 14, 'alert_name': 'CMID(NotEC) Account Count Trend Alert @PostSignup', 'influence': 1}, {'threshold': 1.5, 'column': 'CMID(NotEC) Account Count Velocity Alert @Login', 'mode': 'Peaks', 'lag': 14, 'alert_name': 'CMID(NotEC) Account Count Velocity Alert @Login', 'influence': 1}, {'threshold': 1.5, 'column': 'CMID(NotEC) Account Count Velocity Alert @PostSignup', 'mode': 'Peaks', 'lag': 14, 'alert_name': 'CMID(NotEC) Account Count Velocity Alert @PostSignup', 'influence': 1}, {'threshold': 1.5, 'column': 'CMID(NotEC) Session Count Trend Alert @Login', 'mode': 'Peaks', 'lag': 14, 'alert_name': 'CMID(NotEC) Session Count Trend Alert @Login', 'influence': 1}, {'threshold': 1.5, 'column': 'CMID(NotEC) Session Count Velocity Alert @Login', 'mode': 'Peaks', 'lag': 14, 'alert_name': 'CMID(NotEC) Session Count Velocity Alert @Login', 'influence': 1}, {'threshold': 1.5, 'column': 'GEO Mismatch Account Count Alert @Login', 'mode': 'Peaks', 'lag': 14, 'alert_name': 'GEO Mismatch Account Count Alert @Login', 'influence': 1}]
+In [45]:
+peek_flow2 = peek_flow_test1
+
+result3 = []
+
+for flow in peek_flow2:
+    y = list(table3[flow['alert_name']])
+    y1 = list(map(int, y))
+    Y = np.array(y1)
+    avg_y = np.mean(Y[1:15])  
+    std_y = np.std(Y[1:15])
+    if std_y == 0:
+        threshold = 0
+    else:
+        threshold = (y1[0] - avg_y) / std_y
+        
+        
+
+#     threshold = abs(y1[0] - avg_y) / std_y
+    if threshold > 3:
+        i = 'yes'
+        print('yes')
+        print('threshold is')
+        print(threshold)
+        print(flow['alert_name'])
+        print(y1[0:15])
+        print('Peak for {}. Email sent.'.format(flow['alert_name']))
+        print(' ')
+        
+    else:
+        i = 'no'
+        print('no')
+        print('threshold is')
+        print(flow['alert_name'])
+        print(y1[0:15])
+        print('NO peak for {}. No email to sent.'.format(flow['alert_name'])) 
+        print(' ')
+    result3.append(i)
+no
+threshold is
+Account Creation IP Mismatch Volume Alert - by Geo Country
+[0, 0, 48311, 122658, 23532, 0, 0, 0, 0, 0, 2680, 2453, 0, 0, 0]
+NO peak for Account Creation IP Mismatch Volume Alert - by Geo Country. No email to sent.
+ 
+no
+threshold is
+Account creation volume with disposable emails
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO peak for Account creation volume with disposable emails. No email to sent.
+ 
+no
+threshold is
+Artificial Typing Speed Account Count Trend Alert @PostSignup 
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO peak for Artificial Typing Speed Account Count Trend Alert @PostSignup . No email to sent.
+ 
+no
+threshold is
+Artificial Typing Speed Account Count Velocity Alert @PostSignup 
+[0, 0, 0, 0, 0, 0, 0, 0, 16, 1924, 0, 0, 0, 0, 0]
+NO peak for Artificial Typing Speed Account Count Velocity Alert @PostSignup . No email to sent.
+ 
+no
+threshold is
+CMID(EC) Account Count Trend Alert @Login
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1956, 0, 0]
+NO peak for CMID(EC) Account Count Trend Alert @Login. No email to sent.
+ 
+no
+threshold is
+CMID(EC) Account Count Trend Alert @PostSignup
+[0, 0, 0, 0, 0, 0, 0, 486, 0, 0, 0, 0, 2538, 3609, 0]
+NO peak for CMID(EC) Account Count Trend Alert @PostSignup. No email to sent.
+ 
+no
+threshold is
+CMID(EC) Account Count Velocity Alert @Login
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 6672, 0, 313, 0, 307, 658]
+NO peak for CMID(EC) Account Count Velocity Alert @Login. No email to sent.
+ 
+no
+threshold is
+CMID(EC) Account Count Velocity Alert @PostSignup
+[117, 207, 188, 178, 731, 671, 959, 971, 624, 7450, 2350, 2254, 2733, 3429, 3648]
+NO peak for CMID(EC) Account Count Velocity Alert @PostSignup. No email to sent.
+ 
+no
+threshold is
+CMID(EC) Session Count Trend Alert @Login
+[0, 0, 0, 368, 1043, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO peak for CMID(EC) Session Count Trend Alert @Login. No email to sent.
+ 
+no
+threshold is
+CMID(EC) Session Count Velocity Alert @Login
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 6672, 0, 313, 0, 307, 658]
+NO peak for CMID(EC) Session Count Velocity Alert @Login. No email to sent.
+ 
+no
+threshold is
+CMID(NotEC) Account Count Trend Alert @Login
+[4458, 5421, 6252, 8889, 44392, 26647, 41010, 20902, 24171, 6761, 9060, 8365, 6781, 5710, 9971]
+NO peak for CMID(NotEC) Account Count Trend Alert @Login. No email to sent.
+ 
+no
+threshold is
+CMID(NotEC) Account Count Velocity Alert @Login
+[864, 190, 88, 0, 12975, 5871, 16886, 4750, 3866, 567, 2613, 580, 1118, 804, 1242]
+NO peak for CMID(NotEC) Account Count Velocity Alert @Login. No email to sent.
+ 
+no
+threshold is
+CMID(NotEC) Account Count Velocity Alert @PostSignup
+[0, 193, 0, 0, 404, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO peak for CMID(NotEC) Account Count Velocity Alert @PostSignup. No email to sent.
+ 
+no
+threshold is
+CMID(NotEC) Session Count Trend Alert @Login
+[0, 0, 0, 8916, 59946, 6922, 26391, 0, 2590, 0, 0, 0, 0, 0, 0]
+NO peak for CMID(NotEC) Session Count Trend Alert @Login. No email to sent.
+ 
+no
+threshold is
+CMID(NotEC) Session Count Velocity Alert @Login
+[0, 0, 0, 0, 2243, 1009, 1840, 569, 0, 0, 0, 0, 3039, 0, 0]
+NO peak for CMID(NotEC) Session Count Velocity Alert @Login. No email to sent.
+ 
+no
+threshold is
+GEO Mismatch Account Count Alert @Login
+[0, 0, 70356, 134122, 25378, 2000, 565, 0, 6064, 5308, 0, 0, 0, 0, 0]
+NO peak for GEO Mismatch Account Count Alert @Login. No email to sent.
+ 
+no
+threshold is
+GEO Mismatch Session Count Alert @AddCC
+[0, 289547, 312580, 328641, 208943, 169079, 122777, 32458, 74321, 114618, 48099, 20812, 11097, 0, 34071]
+NO peak for GEO Mismatch Session Count Alert @AddCC. No email to sent.
+ 
+no
+threshold is
+GEO Mismatch Session Count Alert @Login
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO peak for GEO Mismatch Session Count Alert @Login. No email to sent.
+ 
+no
+threshold is
+GEO Mismatch Session Count at Bin Level Trend Alert @AddCC
+[0, 188184, 267673, 268392, 140394, 109045, 58134, 21098, 0, 47904, 12921, 42035, 11702, 25999, 25187]
+NO peak for GEO Mismatch Session Count at Bin Level Trend Alert @AddCC. No email to sent.
+ 
+no
+threshold is
+GEO Mismatch Session Count at Bin Level Velocity Alert @AddCC
+[6183, 139547, 152733, 166671, 52550, 19419, 28131, 25800, 26281, 20538, 22320, 12530, 22002, 12265, 23055]
+NO peak for GEO Mismatch Session Count at Bin Level Velocity Alert @AddCC. No email to sent.
+ 
+no
+threshold is
+GEO Mismatch Session Count at Routing Number Level Velocity Alert @Deposit 
+[0, 26, 0, 0, 27, 0, 0, 0, 0, 0, 22, 0, 0, 0, 0]
+NO peak for GEO Mismatch Session Count at Routing Number Level Velocity Alert @Deposit . No email to sent.
+ 
+no
+threshold is
+GEO Mismatch Session Count at Routing Number Level Velocity Alert @WithdrawalAttempt
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO peak for GEO Mismatch Session Count at Routing Number Level Velocity Alert @WithdrawalAttempt. No email to sent.
+ 
+no
+threshold is
+IP CC Hash Count Trend Alert @AddCC
+[1058, 3521, 183, 2188, 12802, 12198, 5153, 4098, 4871, 13169, 8725, 8045, 6342, 6188, 4985]
+NO peak for IP CC Hash Count Trend Alert @AddCC. No email to sent.
+ 
+no
+threshold is
+IP CC Hash Count Velocity Alert @AddCC
+[0, 0, 0, 0, 3678, 727, 0, 0, 0, 5513, 735, 300, 0, 0, 0]
+NO peak for IP CC Hash Count Velocity Alert @AddCC. No email to sent.
+ 
+no
+threshold is
+LinkerID Account Count Trend Alert @Login
+[0, 0, 457, 0, 14831, 15310, 18702, 5629, 4944, 0, 905, 0, 2312, 0, 591]
+NO peak for LinkerID Account Count Trend Alert @Login. No email to sent.
+ 
+no
+threshold is
+LinkerID Account Count Velocity Alert @Login
+[0, 0, 489, 0, 5317, 6823, 4180, 154, 299, 97, 0, 0, 0, 0, 52]
+NO peak for LinkerID Account Count Velocity Alert @Login. No email to sent.
+ 
+no
+threshold is
+LinkerID Session Count Trend Alert @Login
+[0, 19574, 0, 29177, 31876, 32732, 0, 22957, 0, 29135, 4442, 31141, 0, 20514, 0]
+NO peak for LinkerID Session Count Trend Alert @Login. No email to sent.
+ 
+no
+threshold is
+LinkerID Session Count Velocity Alert @Login
+[299, 453, 590, 902, 1617, 3140, 1100, 1827, 1290, 1353, 1609, 1128, 1571, 874, 1108]
+NO peak for LinkerID Session Count Velocity Alert @Login. No email to sent.
+ 
+no
+threshold is
+SubscriberID Account Count Trend Alert @Login
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO peak for SubscriberID Account Count Trend Alert @Login. No email to sent.
+ 
+no
+threshold is
+SubscriberID Account Count Velocity Alert @Login
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO peak for SubscriberID Account Count Velocity Alert @Login. No email to sent.
+ 
+no
+threshold is
+SubscriberID Account Count Velocity Alert @PostSignup
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO peak for SubscriberID Account Count Velocity Alert @PostSignup. No email to sent.
+ 
+no
+threshold is
+SubscriberID Session Count Trend Alert @Login
+[0, 0, 0, 377, 421, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO peak for SubscriberID Session Count Trend Alert @Login. No email to sent.
+ 
+no
+threshold is
+SubscriberID Session Count Velocity Alert @Login
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO peak for SubscriberID Session Count Velocity Alert @Login. No email to sent.
+ 
+no
+threshold is
+Supercookie Account Count Trend Alert @Login
+[3968, 628, 3602, 3549, 27741, 15696, 21652, 8741, 9844, 0, 10293, 3725, 9841, 2071, 7905]
+NO peak for Supercookie Account Count Trend Alert @Login. No email to sent.
+ 
+no
+threshold is
+Supercookie Account Count Trend Alert @OnboardingGC
+[0, 0, 0, 0, 18, 0, 0, 0, 0, 0, 0, 219, 338, 122, 221]
+NO peak for Supercookie Account Count Trend Alert @OnboardingGC. No email to sent.
+ 
+no
+threshold is
+Supercookie Account Count Trend Alert @PostSignup
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO peak for Supercookie Account Count Trend Alert @PostSignup. No email to sent.
+ 
+no
+threshold is
+Supercookie Account Count Velocity Alert @Login
+[0, 0, 0, 0, 663, 360, 1460, 0, 0, 6674, 0, 0, 0, 0, 0]
+NO peak for Supercookie Account Count Velocity Alert @Login. No email to sent.
+ 
+no
+threshold is
+Supercookie Account Count Velocity Alert @OnboardingGC
+[0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 17, 160, 258, 79, 143]
+NO peak for Supercookie Account Count Velocity Alert @OnboardingGC. No email to sent.
+ 
+no
+threshold is
+Supercookie Account Count Velocity Alert @PostSignup
+[0, 193, 0, 0, 404, 0, 0, 0, 0, 6762, 0, 0, 0, 0, 0]
+NO peak for Supercookie Account Count Velocity Alert @PostSignup. No email to sent.
+ 
+no
+threshold is
+Supercookie Session Count Trend Alert @Login
+[2843, 2692, 6046, 31492, 90104, 24389, 30538, 14249, 15866, 11380, 9872, 5943, 10453, 5993, 17180]
+NO peak for Supercookie Session Count Trend Alert @Login. No email to sent.
+ 
+no
+threshold is
+Supercookie Session Count Trend Alert @OnboardingGC
+[213, 0, 0, 44, 0, 36, 0, 0, 0, 53, 0, 140, 275, 38, 41]
+NO peak for Supercookie Session Count Trend Alert @OnboardingGC. No email to sent.
+ 
+no
+threshold is
+Supercookie Session Count Velocity Alert @Login
+[0, 0, 0, 0, 1082, 361, 1880, 200, 0, 6676, 0, 0, 0, 0, 0]
+NO peak for Supercookie Session Count Velocity Alert @Login. No email to sent.
+ 
+yes
+threshold is
+3.6055512754639896
+Supercookie Session Count Velocity Alert @OnboardingGC
+[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9]
+Peak for Supercookie Session Count Velocity Alert @OnboardingGC. Email sent.
+ 
+no
+threshold is
+Traffic alert cntry --- HoldsAssessment
+[0, 0, 0, 0, 14586, 0, 0, 0, 0, 0, 0, 0, 12907, 0, 0]
+NO peak for Traffic alert cntry --- HoldsAssessment. No email to sent.
+ 
+no
+threshold is
+Traffic alert xclick_cntry_plus --- HoldsAssessment
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO peak for Traffic alert xclick_cntry_plus --- HoldsAssessment. No email to sent.
+ 
+no
+threshold is
+VID Account Count Trend Alert @AddCC
+[0, 0, 0, 0, 0, 0, 0, 0, 10511, 0, 0, 0, 0, 0, 0]
+NO peak for VID Account Count Trend Alert @AddCC. No email to sent.
+ 
+no
+threshold is
+VID Account Count Trend Alert @ConsolidatedFunding
+[2834, 10213, 4223, 12802, 5501, 10971, 3687, 10475, 5187, 11575, 8528, 12238, 8594, 12177, 6992]
+NO peak for VID Account Count Trend Alert @ConsolidatedFunding. No email to sent.
+ 
+no
+threshold is
+VID Account Count Trend Alert @Login
+[5358, 1324, 3784, 3345, 28935, 14396, 31272, 19890, 16435, 0, 12790, 3303, 11879, 3504, 8742]
+NO peak for VID Account Count Trend Alert @Login. No email to sent.
+ 
+no
+threshold is
+VID Account Count Trend Alert @OnboardingGC
+[168, 284, 99, 595, 92, 403, 188, 473, 191, 502, 197, 629, 191, 685, 393]
+NO peak for VID Account Count Trend Alert @OnboardingGC. No email to sent.
+ 
+no
+threshold is
+VID Account Count Trend Alert @PostSignup
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO peak for VID Account Count Trend Alert @PostSignup. No email to sent.
+ 
+no
+threshold is
+VID Account Count Velocity Alert @AddCC
+[0, 193, 0, 0, 405, 0, 0, 0, 0, 6562, 0, 0, 0, 0, 0]
+NO peak for VID Account Count Velocity Alert @AddCC. No email to sent.
+ 
+no
+threshold is
+VID Account Count Velocity Alert @ConsolidatedFunding
+[0, 6505, 0, 6299, 0, 5808, 0, 6622, 0, 4570, 0, 4529, 0, 2991, 0]
+NO peak for VID Account Count Velocity Alert @ConsolidatedFunding. No email to sent.
+ 
+no
+threshold is
+VID Account Count Velocity Alert @Login
+[0, 776, 690, 3113, 5685, 4721, 12215, 12652, 13613, 17246, 5783, 1644, 2983, 4999, 5971]
+NO peak for VID Account Count Velocity Alert @Login. No email to sent.
+ 
+no
+threshold is
+VID Account Count Velocity Alert @OnboardingGC
+[6, 46, 44, 51, 40, 47, 25, 60, 21, 56, 33, 60, 43, 51, 52]
+NO peak for VID Account Count Velocity Alert @OnboardingGC. No email to sent.
+ 
+no
+threshold is
+VID Account Count Velocity Alert @PostSignup
+[0, 193, 0, 0, 404, 0, 0, 0, 0, 6762, 0, 0, 0, 0, 0]
+NO peak for VID Account Count Velocity Alert @PostSignup. No email to sent.
+ 
+no
+threshold is
+VID Session Count Trend Alert @Login
+[0, 0, 0, 43468, 135171, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO peak for VID Session Count Trend Alert @Login. No email to sent.
+ 
+no
+threshold is
+VID Session Count Trend Alert @OnboardingGC
+[479, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO peak for VID Session Count Trend Alert @OnboardingGC. No email to sent.
+ 
+no
+threshold is
+VID Session Count Velocity Alert @Login
+[0, 272, 304, 2656, 1484, 4034, 12588, 17412, 19091, 21053, 8667, 2636, 5440, 6641, 8708]
+NO peak for VID Session Count Velocity Alert @Login. No email to sent.
+ 
+no
+threshold is
+VID Session Count Velocity Alert @OnboardingGC
+[69, 11, 20, 58, 37, 31, 17, 19, 6, 24, 14, 39, 50, 49, 17]
+NO peak for VID Session Count Velocity Alert @OnboardingGC. No email to sent.
+ 
+no
+threshold is
+VM Volume @Login
+[0, 0, 0, 0, 25302, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO peak for VM Volume @Login. No email to sent.
+ 
+no
+threshold is
+VM Volume Alert
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO peak for VM Volume Alert. No email to sent.
+ 
+no
+threshold is
+VPN Volume @Login
+[0, 0, 118252, 0, 0, 150003, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO peak for VPN Volume @Login. No email to sent.
+ 
+no
+threshold is
+VPN Volume Alert
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO peak for VPN Volume Alert. No email to sent.
+ 
+no
+threshold is
+fdcc_emulator_login
+[0, 0, 0, 36036, 52116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO peak for fdcc_emulator_login. No email to sent.
+ 
+no
+threshold is
+fdcc_emulator_signup
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO peak for fdcc_emulator_signup. No email to sent.
+ 
+Count of pass 3 std: 1
+Count of pass 2 std: 3
+Count of pass 1 std: 3
+In [ ]:
+peek_flow2 = peek_flow_test1
+
+result3 = []
+
+for flow in peek_flow2:
+    y = list(table3[flow['alert_name']])
+    y1 = list(map(int, y))
+    Y = np.array(y1)
+    avg_y = np.mean(Y[1:15])  
+    std_y = np.std(Y[1:15])
+    if std_y == 0:
+        threshold = 0
+    else:
+        threshold = (y1[0] - avg_y) / std_y
+        
+        
+
+#     threshold = abs(y1[0] - avg_y) / std_y
+    if threshold > 3:
+        i = 'yes'   
+    else:
+        i = 'no'     
+    result3.append(i)
+In [36]:
+result3
+count = result3.count('yes')
+print('Count of pass 3 std:', count)
+Count of pass 3 std: 1
+In [38]:
+peek_flow2 = peek_flow_test1
+
+result2 = []
+
+for flow in peek_flow2:
+    y = list(table3[flow['alert_name']])
+    y1 = list(map(int, y))
+    Y = np.array(y1)
+    avg_y = np.mean(Y[1:15])  
+    std_y = np.std(Y[1:15])
+    if std_y == 0:
+        threshold = 0
+    else:
+        threshold = (y1[0] - avg_y) / std_y
+        
+        
+
+#     threshold = abs(y1[0] - avg_y) / std_y
+    if threshold > 2:
+        i = 'yes'   
+    else:
+        i = 'no'     
+    result2.append(i)
+In [41]:
+peek_flow2 = peek_flow_test1
+
+result1 = []
+
+for flow in peek_flow2:
+    y = list(table3[flow['alert_name']])
+    y1 = list(map(int, y))
+    Y = np.array(y1)
+    avg_y = np.mean(Y[1:15])  
+    std_y = np.std(Y[1:15])
+    if std_y == 0:
+        threshold = 0
+    else:
+        threshold = (y1[0] - avg_y) / std_y
+        
+        
+
+#     threshold = abs(y1[0] - avg_y) / std_y
+    if threshold > 1:
+        i = 'yes'   
+    else:
+        i = 'no'     
+    result1.append(i)
+In [119]:
+# This is the functions we can use to calculate the amount of alert emails by different threshold value.
+# Change the following 13 from 0 to 13 for 14 times, we can get the count results for the specific period we want to know.
+table3_1=table3.iloc[13: , :]
+name_list1 = list(table3_1)
+alert_name_list = list(table3_1)[1:]
+
+mylist = alert_name_list
+
+peek_flow_test1 = []
+
+lag = 14
+threshold = 3
+influence = 1
+mode1 = 'Peaks'
+mode2 = 'Valley'
+
+for i in range(len(alert_name_list)):
+    dict = {}
+    dict['column'] = mylist[i]
+    dict['alert_name'] = mylist[i]
+    dict['lag'] = lag
+    dict['threshold'] = threshold
+    dict['influence'] = influence
+    if influence == 1:
+        dict['mode'] = mode1
+    else:
+        dict['mode'] = mode2
+    peek_flow_test1.append(dict)
+    del(dict)
+
+
+# print(peek_flow_test1[:15])
+
+peek_flow2 = peek_flow_test1
+
+result3 = []
+result2 = []
+result1 = []
+result4 = []
+
+for flow in peek_flow2:
+    y = list(table3_1[flow['alert_name']])
+    y1 = list(map(int, y))
+    Y = np.array(y1)
+    avg_y = np.mean(Y[1:15])  
+    std_y = np.std(Y[1:15])
+    if std_y == 0:
+        threshold = 0
+    else:
+        threshold = (y1[0] - avg_y) / std_y
+        
+        
+
+#     threshold = abs(y1[0] - avg_y) / std_y
+    if threshold > 4:
+        i = 'yes'   
+    else:
+        i = 'no'     
+    result4.append(i)
+    
+    if threshold > 3:
+        i = 'yes'   
+    else:
+        i = 'no'     
+    result3.append(i)
+    
+    if threshold > 2:
+        i = 'yes'   
+    else:
+        i = 'no'     
+    result2.append(i)
+    
+    if threshold > 1:
+        i = 'yes'   
+    else:
+        i = 'no'     
+    result1.append(i)
+
+count4 = result4.count('yes')
+print('Count of pass 4 std:', count4)
+count3 = result3.count('yes')
+print('Count of pass 3 std:', count3)
+count2 = result2.count('yes')
+print('Count of pass 2 std:', count2)                                                                        
+count1 = result1.count('yes')
+print('Count of pass 1 std:', count1)
+Count of pass 4 std: 1
+Count of pass 3 std: 3
+Count of pass 2 std: 4
+Count of pass 1 std: 10
+
+
+
