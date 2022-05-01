@@ -1,0 +1,187 @@
+⊖
+In [1]:
+%reload_ext sql
+%config PPMagics.fastload = True
+import pandas as pd
+import numpy as np
+from decimal import Decimal
+import datetime
+from datetime import datetime, timedelta, date
+import logging as log
+
+
+import matplotlib.pyplot as plt
+In [2]:
+%%teradata_simba
+select session
+ERROR:teradata.udaexec:Unable to create connection: {'queryBands': {'PROXYUSER': 'yalyan', 'nb_td_scheduled_sql': 'yalyan'}, 'system': 'simba.vip.paypal.com', 'password': 'XXXXXX', 'username': 'gimelproxyuser', 'method': 'odbc', 'charset': 'UTF8', 'transactionMode': 'TERADATA'}
+Traceback (most recent call last):
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/teradata/udaexec.py", line 183, in connect
+    **args))
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/teradata/tdodbc.py", line 460, in __init__
+    queryTimeout=QUERY_TIMEOUT)
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/teradata/tdodbc.py", line 592, in execute
+    checkStatus(rc, hStmt=self.hStmt, method="SQLExecDirectW")
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/teradata/tdodbc.py", line 209, in checkStatus
+    raise DatabaseError(i[2], u"[{}] {}".format(i[0], msg), i[0])
+teradata.api.DatabaseError: (5882, '[HY000] [Teradata][ODBC Teradata Driver][Teradata Database] Invalid SET statement in the triggered action. ')
+ERROR:teradata_simba:wrap_exception DatabaseError: (5882, '[HY000] [Teradata][ODBC Teradata Driver][Teradata Database] Invalid SET statement in the triggered action. ')
+Traceback (most recent call last):
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/pputils/utils/exceptions.py", line 149, in wrapper
+    return fn(*args, **kwargs)
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/pputils/utils/kafkalogger.py", line 34, in wrapped_f
+    raise e
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/pputils/utils/kafkalogger.py", line 28, in wrapped_f
+    result = f(*args, **kw)
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/ppmagics/tdhistory.py", line 355, in wrapper
+    raise e
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/ppmagics/tdhistory.py", line 351, in wrapper
+    return fn(*args, **kwargs)
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/ppmagics/ppmagics.py", line 1707, in teradata_simba
+    return self._common_teradata_processing(args, cluster_name, user_name, cell)
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/ppmagics/ppmagics.py", line 1562, in _common_teradata_processing
+    raise e
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/ppmagics/ppmagics.py", line 1525, in _common_teradata_processing
+    result = self._get_connection_(ConnectionType.TERADATA, cluster_name, user_name).execute(
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/ppmagics/ppmagics.py", line 190, in _get_connection_
+    self.connections[connection_name] = TeradataConnection(cluster, user_name, self.shell, self.td_charset, self.numeric_converter)
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/ppsql/connection/teradataconnection.py", line 68, in __init__
+    connection = cm_connection.api_call('getcon')(cluster_info['host'], cluster, user_name, self.proxyuser, td_charset, numeric_converter=numeric_converter)
+  File "nbapi/cm_connection.py", line 182, in nbapi.cm_connection.api_call.getcon
+  File "nbapi/cm_connection.py", line 179, in nbapi.cm_connection.api_call.getcon
+  File "nbapi/cm_connection.py", line 761, in nbapi.cm_connection.WrapperConnection.__init__
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/teradata/udaexec.py", line 183, in connect
+    **args))
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/teradata/tdodbc.py", line 460, in __init__
+    queryTimeout=QUERY_TIMEOUT)
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/teradata/tdodbc.py", line 592, in execute
+    checkStatus(rc, hStmt=self.hStmt, method="SQLExecDirectW")
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/teradata/tdodbc.py", line 209, in checkStatus
+    raise DatabaseError(i[2], u"[{}] {}".format(i[0], msg), i[0])
+teradata.api.DatabaseError: (5882, '[HY000] [Teradata][ODBC Teradata Driver][Teradata Database] Invalid SET statement in the triggered action. ')
+DatabaseError: (5882, '[HY000] [Teradata][ODBC Teradata Driver][Teradata Database] Invalid SET statement in the triggered action. ')
+
+DatabaseError: [HY000] [Teradata][ODBC Teradata Driver][Teradata Database] Invalid SET statement in the triggered action. 
+In [3]:
+def run_query(sql, framed=False):
+    """
+    Simple function to execute a query
+    Option to return results as a dataframe
+    """
+    query = %teradata_simba $sql
+    
+    if framed:
+        df = query.DataFrame()
+        return df
+In [4]:
+def get_table2(sql):
+    """
+    Simple function to execute a query by using run_query function, query to union 8 source tables to table2 
+    Including process of judging the right value and pass to 'alert_count'
+    Option to return results as a dataframe
+    """
+    df1 = run_query(sql_table2, framed = True)
+    df1['alert_count'] = pd.np.where(df1.alert_name.str.contains("Account Count"), df1['acct_count'], df1['session_count'])
+    df2 = df1[['alert_timestamp', 'alert_name', 'alert_count']]
+    
+    return df2
+In [5]:
+"""
+the following for final table2
+"""
+Out[5]:
+'\nthe following for final table2\n'
+In [6]:
+sql_table2 = """
+
+sel alert_timestamp, alert_name,
+count(*) as session_count, 
+count(distinct U1_account_number) as acct_count
+from PP_OAP_ROM_T.fdcc_signup_alert_data
+group by 1,2
+union
+    
+sel alert_timestamp, alert_name,
+count(*) as session_count, 
+count(distinct KEY_Account_number) as acct_count
+from PP_OAP_ROM_T.fdcc_login_alert_data
+group by 1,2
+union
+    
+sel alert_timestamp, alert_name,
+count(*) as session_count, 
+count(distinct KEY_Sender) as acct_count
+from PP_OAP_ROM_T.fdcc_withdrawalattempt_alert_data
+group by 1,2
+union
+
+sel alert_timestamp, alert_name,
+count(*) as session_count, 
+count(distinct U1_account_number) as acct_count
+from PP_OAP_ROM_T.fdcc_onboardinggc_alert_data
+group by 1,2
+union
+    
+sel alert_timestamp, alert_name,
+count(*) as session_count, 
+count(distinct KEY_Sender) as acct_count
+from PP_OAP_ROM_T.fdcc_holdsassessment_alert_data
+group by 1,2
+union
+
+sel alert_timestamp, alert_name,
+count(*) as session_count, 
+count(distinct U1_account_number) as acct_count
+from PP_OAP_ROM_T.fdcc_deposit_alert_data
+group by 1,2
+union
+
+sel alert_timestamp, alert_name,
+count(*) as session_count, 
+count(distinct KEY_Sender) as acct_count
+from PP_OAP_ROM_T.fdcc_consolidatedfunding_alert_data
+group by 1,2
+union
+
+sel alert_timestamp, alert_name,
+count(*) as session_count, 
+count(distinct U1_account_number) as acct_count
+from PP_OAP_ROM_T.fdcc_addcc_alert_data
+group by 1,2
+
+order by 1 DESC,2 ASC
+
+"""
+In [7]:
+table2 = get_table2(sql_table2)
+HTML(value='')
+HTML(value='')
+HTML(value='')
+In [8]:
+table2.head(10)
+Out[8]:
+	alert_timestamp	alert_name	alert_count
+0	2022-03-03 12:00:00	Supercookie Session Count Trend Alert @Onboard...	34
+1	2022-03-03 12:00:00	VID Account Count Trend Alert @OnboardingGC	114
+2	2022-03-03 11:00:00	CMID(NotEC) Account Count Trend Alert @Login	667
+3	2022-03-03 11:00:00	VID Account Count Trend Alert @OnboardingGC	117
+4	2022-03-03 11:00:00	VID Account Count Velocity Alert @Login	155
+5	2022-03-03 10:00:00	CMID(NotEC) Account Count Trend Alert @Login	721
+6	2022-03-03 10:00:00	GEO Mismatch Account Count Alert @Login	586
+7	2022-03-03 10:00:00	VID Account Count Trend Alert @OnboardingGC	135
+8	2022-03-03 10:00:00	VID Account Count Velocity Alert @Login	148
+9	2022-03-03 10:00:00	VID Session Count Trend Alert?@OnboardingGC	105
+In [9]:
+len(table2)
+Out[9]:
+10000
+In [10]:
+%teradata_simba -df table2 -t PP_FDCC_TABLES.alert_count_hourly
+HTML(value='')
+HTML(value='')
+ERROR:kafka.conn:Connect attempt to <BrokerConnection node_id=bootstrap host=ccg22kafkaflexpaz41.ccg22.lvs.paypalinc.com:9092 <connecting> [IPv4 ('10.47.253.176', 9092)]> returned error 111. Disconnecting.
+In [ ]:
+
+In [ ]:
+
+
