@@ -1,0 +1,152 @@
+Alert Status Monitoring--Peak & Valley
+
+Summary
+Peak/Valley are designed for the analysts to monitor the status of the different camera alerts in priority when the count of alerts is passing the threshold we set.
+Once a peak/valley notification is sent to the analyst, that means there is a merge increase or suddenly decrease in the count of a specific alert. There is a higher possibility that this camera is in an abnormal status and needs to be monitored in priority.
+In this way, the analysts could go to the dashboard of the records of this camera from spider to view the historical records for this specific camera, which could make the monitor work to be more efficient.
+The monitoring is almost in-time. We get the alerts counting data from the Teradata database. By selecting the useful columns and applying the necessary counting mode, we are regenerating the tables.
+The function has enough flexibility to allow the user to change the size of parameters based on different matrices.
+The basic matrix we applied in the functions are:
+•	Lag, we will need this to decide the range of data we select when we apply the statistical models. Since we have long historical data, the peak/valley will be different based on which data frame we use.
+•	Threshold: Result will be different if we set different values to the threshold, the alerts will be sent in a higher frequency if a lower threshold has been set. In the other way, a lower frequency of alerts email being received if a lower threshold value has been set.
+•	Influence: The basic logic to detect the peak/valley is the same, of which the fundamental is to detect the abnormal cases among the historical records. So we could set the influence parameters in an opposite way to distinguish in which circumstance we are applying this function.
+•	Alert type (Camera name) : Different alert_name as one of the variables.
+Components:
+•	Detect peak/valley
+•	Plotting in charts
+•	Send email, email content design
+
+
+Fine-turn (Hyper parameter) : Different Threshold value testing and results.
+We set different threshold for peak and valley based on what is the best frequency that the email alerts being received with smallest noise. Here are some test results when we set different threshold based on different values.
+Average: how many alert emails received during the past 12 hours on average.
+
+Test results by different threshold for Peak
+NO.	12 hours time zone (end time)	threshold 
+		1	2	2.5	3	4
+1	1/13/22 00:00	20	6	4	3	1
+2	1/13/22 12:00	12	1	0	0	0
+3	1/14/22 00:00	14	3	3	3	1
+4	1/14/22 12:00	13	2	2	2	1
+5	1/15/22 00:00	17	2	2	2	1
+6	1/15/22 12:00	15	1	1	1	1
+7	1/16/22 00:00	18	3	2	2	2
+8	1/16/22 12:00	23	2	2	2	1
+9	1/17/22 00:00	19	5	5	4	2
+10	1/17/22 12:00	16	2	2	2	1
+11	1/18/22 00:00	20	7	6	5	2
+12	1/18/22 12:00	15	2	2	2	1
+13	1/19/22 00:00	24	6	5	3	2
+14	1/19/22 12:00	17	4	3	3	2
+Average		17.45	3.27	2.82	2.45	1.09
+
+
+Test results by different threshold for Valley
+NO.	12 hours time zone (end time)	threshold 
+		0.5	0.75	1	1.5	2
+1	2/3/22 5:00	17	5	0	0	0
+2	2/2/22 17:00	12	0	0	0	0
+3	2/2/22 5:00	13	3	0	0	0
+4	2/1/22 17:00	11	1	0	0	0
+5	2/1/22 5:00	17	1	0	0	0
+6	1/31/22 17:00	11	0	0	0	0
+7	1/31/22 5:00	17	3	2	1	0
+8	1/30/22 17:00	19	1	1	0	0
+9	1/30/22 5:00	19	4	3	0	0
+10	1/29/22 17:00	15	1	0	0	0
+11	1/29/22 5:00	19	7	1	0	0
+12	1/28/22 17:00	13	1	0	0	0
+13	1/28/22 5:00	21	8	1	0	0
+14	1/27/22 17:00	15	3	0	0	0
+Average		15.6	2.7	0.57	0.07	0
+
+
+After testing and discussion with analysts, we finally choose threshold = 3 for peak and threshold  = 1.5 for Valley. 
+Main Functions
+1.Get_table3:
+The basic goal for getting_table3 is to regenerate and pivot the original table2 to a table which we can apply the following other functions to. In this function, we use a selecting logic to judge which counting numbers is the one we apply to the final account column, when the alert name contains 'session' or not. And we standardized the camera name, removing the abnormal characters like extra space or special characters such as '?'. We get the rolling 12 sum count for the past 12 time units, and rank the alerts count in descending.
+2. Threshold algo:
+As this is the most complicated function in the project. The function contains the basic statistical model we use for this project. The threshold was defined as (the most updated count - the average for the past N(N is lag) count)/ the standard deviation of the past N count. At the same time, we need to consider the influence , which is designed to decide this function being used in peak or valley situations. 
+3. Get_peaks/get_valleys:
+This function is to connect the threshold_algo function with the peak function. It decides which data to be used in the final plot that we want to present in the alert emails.
+4. Plot_peaks/plot_valleys:
+This plot function is to design the line chat and the standard line that we set to compare with the peak/valley red point. We added the simple but useful features for the plots that we designed.
+5. Format_query:
+Since we need to design the emails content, we need html to help to design the interface of the email. we put the useful and selected information in the email.
+6. Link function:
+The analysts requested a link of the spider dashboard inserted in the email so that they could go to the specific spider page immediately.  
+
+
+Differences between peak and valley functions
+1. In plot_peaks function, we calculate the past 14 average and std
+While in plot_valley we use the past 60 average and std. This is as requested by the analyst.
+However, they both plot the past 60 points in the line chat;
+2. Lag in peak function is lag=14, in valley function is lag =60;
+lag will be used in :
+1) threshold_algo function
+2) get_peaks or get_valleys function
+3) when we generate the peak_flow or valley_flow dictionary
+
+3. The name all changed from 'peak' to 'valley' in get_peaks/get_valleys; plot_peaks/plot_valleys functions.Or anywhere that need the name to be changed.
+
+4. The full logic in threshold_algo is same in both peak and valley, but when we generate the peak_flow and valley_flow, we changed the 'influence = 1' to 'influence= -1'. At the same time we change the 'mode' from peak to valley in the flow design.
+
+5.Images saved in 'img5_3' folder for all peak images, while saved in 'img1.5_V' folder for all valley images. So make sure you have this 2 empty folder created in your notebook so that the images could be stored.
+
+6.peaks_template and valleys_template, both of them in HTML, only the name for peak and valley and related details in the email content had been changed.
+
+7. Changes for specific functions.
+1)Changes in threshold_algo function from peak to valley
+Lag change from 14 to 60, influence change from 1 to -1, threshold change from 3 to 1.5;
+However, all those value changes were included when we design the peak_flow or velley_flow, so we actually don't need to modify anything in the function itself.
+2)Changes from get_peaks function to get_valleys:
+same as above
+3)Changes from plot_peaks function to plot_valleys:
+A. The calculation for avg and std, in peak using the past 14 before the last number, while in valley using the past 60 before the last number;
+B. But for both peak and valley plotting the last 60 points in the line chats;
+C. label name changed from peak to valley
+D. the calculation for axhline changed from
+
+plt.axhline(y = avg_y + query_dict['threshold']* std_y
+
+to
+
+plt.axhline(y = avg_y - query_dict['threshold']* std_y
+
+4) Changes from peak_flow to valley_flow:
+lag =14 changed to lag =60
+threshold =3 changed to threshold =1.5
+influence=1 changed to influence =-1
+mode change from 'peak' to 'valley'
+
+
+
+How to move all the code to another owner's notebook
+Step 1: Copy and paste 'get_table_alert_count_hourly', schedule it by a hourly rate, so that the table can be repopulated and updated by hourly from source data. We will get table2 from this step, only table 2 can be used by the following functions.
+Step2: Create 2 empty folder 'img5_3' and 'img1.5_V' (just same name as the images stored route in the code), so that the following code can run though.
+Step3: Copy and paste 'v5_3_12_test', schedule it by a 12hours rate. For example: start from 3/15/2022 00:00:00  AM to 6/13/2022 00:00:00 AM (It seems like 3 months is the max that we could set).  This code is to send out the peak alert emails, and have to use the table2 from step1.
+
+Step4: Copy and paste 'Valley_3_12hrs', schedule it by a 12hours rate. For example: start from 3/15/2022 00:00:00  AM to 6/13/2022 00:00:00 AM (It seems like 3 months is the max that we could set).  This code is to send out the valley alert emails, and have to use the table2 from step1, this step is in parallel with Step2, just for different purposes.
+
+With the above steps, the peak/valley emails could sending out from the new scheduler's email address.
+
+
+Scheduler jobs setting and code version control
+1.Final version to get_table2 is 'get_table_alert_count_hourly', it is being schedulled and running now. Table2 is used to extract the useful columns and repopulate the tables from source data.
+2.The original version of code for peaks is 'v5_3_12hrs_test'.  It has been schedulled, but it was mistake been deleted, the new version for this one is 'v5_3_12_test', this version contains the comments for the code but it is not being schedulled. Just use it to understand the logic with the comments inside.
+3. The final version for peak, which in a organized format, is 'Peak_3', it has been schedulled and running every 12 hours, from 3/8/2022 12am to 6/8/2022 12 am.
+4. The original version of code for valleys is 'Valley_1.5_12hrs_test', it has been shedulled and running now, this version contains the comments for the code. You can read it for understanding the logic in valley functions.
+5. The final version for peak, which in a organized format, is 'Valley_1.5', it is not schedulled.
+6. The introduction about the difference between peak and valley is in 'peak_valley_diff'.
+
+
+Requests
+Description	Date	Solution Design	Date	Status	Note
+The specific related spider link to the alert type in the notification email need to be inserted in the email content , so that the analysts can go to the spider dashboard directly.  	Feb3	A link function designed to connect the Spider link with the specific alert in the email name.	Feb 17	Completed	
+A new type of email notification need to be designed, which is special used to detect a continuous 10 0r 12 count of '0' among the peak/valleys during the past 14 checks.	Feb 18	Need to make some settings or new functions to detect the continuous '0' situation. Send this email notification with a new email name		Pending	Waiting the analysts to confirm how many continuous '0', and the new email name for this type.
+					
+
+
+
+
+
