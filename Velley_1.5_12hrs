@@ -1,0 +1,1233 @@
+⊖
+In [ ]:
+
+In [1]:
+%reload_ext sql
+%config PPMagics.fastload = True
+import pandas as pd
+import numpy as np
+from decimal import Decimal
+import datetime
+from datetime import datetime, timedelta, date
+import logging as log
+
+
+import matplotlib.pyplot as plt
+In [2]:
+# import logging
+# # log.basicConfig(filename='/logs/demo_test1.log', filemode='w', level=log.INFO, format = '%(asctime)s:%(name)s:%(message)s')
+# logging.basicConfig(filename='demo_test1.log', filemode='w', level=log.INFO)
+
+# my_logger = logging.getLogger('My Logger')
+# my_logger.info('Starting Alerts Script')
+In [3]:
+%%teradata_simba
+select session
+ERROR:teradata.udaexec:Unable to create connection: {'password': 'XXXXXX', 'system': 'simba.vip.paypal.com', 'username': 'gimelproxyuser', 'method': 'odbc', 'charset': 'UTF8', 'transactionMode': 'TERADATA', 'queryBands': {'nb_td_scheduled_sql': 'yalyan', 'PROXYUSER': 'yalyan'}}
+Traceback (most recent call last):
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/teradata/udaexec.py", line 183, in connect
+    **args))
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/teradata/tdodbc.py", line 460, in __init__
+    queryTimeout=QUERY_TIMEOUT)
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/teradata/tdodbc.py", line 592, in execute
+    checkStatus(rc, hStmt=self.hStmt, method="SQLExecDirectW")
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/teradata/tdodbc.py", line 209, in checkStatus
+    raise DatabaseError(i[2], u"[{}] {}".format(i[0], msg), i[0])
+teradata.api.DatabaseError: (5882, '[HY000] [Teradata][ODBC Teradata Driver][Teradata Database] Invalid SET statement in the triggered action. ')
+ERROR:teradata_simba:wrap_exception DatabaseError: (5882, '[HY000] [Teradata][ODBC Teradata Driver][Teradata Database] Invalid SET statement in the triggered action. ')
+Traceback (most recent call last):
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/pputils/utils/exceptions.py", line 149, in wrapper
+    return fn(*args, **kwargs)
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/pputils/utils/kafkalogger.py", line 34, in wrapped_f
+    raise e
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/pputils/utils/kafkalogger.py", line 28, in wrapped_f
+    result = f(*args, **kw)
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/ppmagics/tdhistory.py", line 355, in wrapper
+    raise e
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/ppmagics/tdhistory.py", line 351, in wrapper
+    return fn(*args, **kwargs)
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/ppmagics/ppmagics.py", line 1707, in teradata_simba
+    return self._common_teradata_processing(args, cluster_name, user_name, cell)
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/ppmagics/ppmagics.py", line 1562, in _common_teradata_processing
+    raise e
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/ppmagics/ppmagics.py", line 1525, in _common_teradata_processing
+    result = self._get_connection_(ConnectionType.TERADATA, cluster_name, user_name).execute(
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/ppmagics/ppmagics.py", line 190, in _get_connection_
+    self.connections[connection_name] = TeradataConnection(cluster, user_name, self.shell, self.td_charset, self.numeric_converter)
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/ppsql/connection/teradataconnection.py", line 68, in __init__
+    connection = cm_connection.api_call('getcon')(cluster_info['host'], cluster, user_name, self.proxyuser, td_charset, numeric_converter=numeric_converter)
+  File "nbapi/cm_connection.py", line 182, in nbapi.cm_connection.api_call.getcon
+  File "nbapi/cm_connection.py", line 179, in nbapi.cm_connection.api_call.getcon
+  File "nbapi/cm_connection.py", line 761, in nbapi.cm_connection.WrapperConnection.__init__
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/teradata/udaexec.py", line 183, in connect
+    **args))
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/teradata/tdodbc.py", line 460, in __init__
+    queryTimeout=QUERY_TIMEOUT)
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/teradata/tdodbc.py", line 592, in execute
+    checkStatus(rc, hStmt=self.hStmt, method="SQLExecDirectW")
+  File "/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/teradata/tdodbc.py", line 209, in checkStatus
+    raise DatabaseError(i[2], u"[{}] {}".format(i[0], msg), i[0])
+teradata.api.DatabaseError: (5882, '[HY000] [Teradata][ODBC Teradata Driver][Teradata Database] Invalid SET statement in the triggered action. ')
+DatabaseError: (5882, '[HY000] [Teradata][ODBC Teradata Driver][Teradata Database] Invalid SET statement in the triggered action. ')
+
+DatabaseError: [HY000] [Teradata][ODBC Teradata Driver][Teradata Database] Invalid SET statement in the triggered action. 
+In [4]:
+# my_logger = log.getLogger('Peak/Valley')
+#being used under flow_valley
+In [3]:
+ALERTED = False
+COUNT = 0
+#being used under flow_valley
+In [6]:
+def run_query(sql, framed=False):
+    """
+    Simple function to execute a query
+    Option to return results as a dataframe
+    """
+    query = %teradata_simba $sql
+    
+    if framed:
+        df = query.DataFrame()
+        return df
+In [ ]:
+
+In [ ]:
+sql_table2 = """
+select * from PP_FDCC_TABLES.alert_count_hourly
+order by alert_timestamp desc
+"""
+table2 = run_query(sql_table2, framed = True)
+In [8]:
+table2.head()
+Out[8]:
+	alert_timestamp	alert_name	alert_count
+0	2022-03-02 20:00:00	GEO Mismatch Account Count at Routing Number L...	834
+1	2022-03-02 20:00:00	CMID(NotEC) Account Count Trend Alert @Login	410
+2	2022-03-02 19:00:00	GEO Mismatch Account Count at Routing Number L...	1002
+3	2022-03-02 19:00:00	Supercookie Session Count Velocity Alert @Onbo...	9
+4	2022-03-02 19:00:00	CMID(NotEC) Account Count Trend Alert @Login	474
+In [9]:
+def get_table3(df):
+    
+    df3_1 = df.pivot(index='alert_timestamp', columns='alert_name', values='alert_count')
+    df3_2 = df3_1.fillna(0)
+    df3_2['alert_timestamp']= df3_2.index
+    
+    cols = list(df3_2.columns)
+    cols = [cols[-1]] + cols[:-1]
+    df3_3 = df3_2[cols]   
+    
+    df3_4 = df3_3.sort_values(by=['alert_timestamp'], ascending=False)
+    df3_5 = df3_4.reset_index(drop=True)
+    df3_5.columns = df3_5.columns.str.replace('?', ' ')
+    
+    df3_6 = df3_5.set_index(['alert_timestamp']).sort_index(ascending=True).asfreq(freq ='H', fill_value = 0)
+    df3_7 = df3_6.rolling('12H').sum()
+    df3_8 = df3_7.sort_index(ascending=False)
+    df3_9 = df3_8.iloc[::12, :]
+    df3_9.reset_index(inplace=True)
+    df3_10 = df3_9.rename(columns = {'index':'alert_timestamp'})
+    table3 = df3_10
+    
+    return table3
+In [10]:
+# table4 = table3.set_index(['alert_timestamp']).sort_index(ascending=True).asfreq(freq ='H', fill_value = 0)
+# table4.head(10)
+# table5 = table4.rolling('12H').sum()
+# table5.head()
+# table6 = table5.sort_index(ascending=False)
+# table6.head(10)
+
+# table7.reset_index(inplace=True)
+# table8 = table7.rename(columns = {'index':'alert_timestamp'})
+In [11]:
+table3 = get_table3(table2)
+table3.head()
+Out[11]:
+alert_name	alert_timestamp	Account Creation IP Mismatch Volume Alert - by Geo Country	Account creation volume with disposable emails	Artificial Typing Speed Account Count Trend Alert @PostSignup	Artificial Typing Speed Account Count Velocity Alert @PostSignup	CMID(EC) Account Count Trend Alert @Login	CMID(EC) Account Count Trend Alert @PostSignup	CMID(EC) Account Count Velocity Alert @Login	CMID(EC) Account Count Velocity Alert @PostSignup	CMID(EC) Session Count Trend Alert @Login	...	VID Account Count Velocity Alert @PostSignup	VID Session Count Trend Alert @Login	VID Session Count Trend Alert @OnboardingGC	VID Session Count Velocity Alert @Login	VID Session Count Velocity Alert @OnboardingGC	VM Volume @Login	VM Volume Alert	VPN Volume @Login	VPN Volume Alert	fdcc_emulator_login
+0	2022-03-02 20:00:00	0.0	568.0	0.0	0.0	0.0	0.0	0.0	719.0	0.0	...	0.0	0.0	135.0	2906.0	0.0	0.0	0.0	0.0	0.0	0.0
+1	2022-03-02 08:00:00	0.0	0.0	0.0	0.0	0.0	361.0	0.0	1439.0	0.0	...	525.0	0.0	0.0	430.0	0.0	0.0	0.0	0.0	0.0	0.0
+2	2022-03-01 20:00:00	0.0	333.0	0.0	17.0	0.0	0.0	0.0	594.0	0.0	...	0.0	0.0	253.0	9058.0	0.0	0.0	0.0	0.0	0.0	0.0
+3	2022-03-01 08:00:00	311.0	303.0	0.0	16.0	0.0	0.0	0.0	960.0	0.0	...	562.0	0.0	0.0	16297.0	0.0	0.0	0.0	86342.0	0.0	0.0
+4	2022-02-28 20:00:00	4775.0	0.0	0.0	17.0	0.0	0.0	0.0	739.0	0.0	...	0.0	0.0	0.0	17559.0	0.0	0.0	0.0	0.0	0.0	0.0
+5 rows × 65 columns
+In [12]:
+# tabel3['CMID(EC) Account Count Trend Alert @PostSignup']
+In [13]:
+name_list = list(table3)
+name_list
+Out[13]:
+['alert_timestamp',
+ 'Account Creation IP Mismatch Volume Alert - by Geo Country',
+ 'Account creation volume with disposable emails',
+ 'Artificial Typing Speed Account Count Trend Alert @PostSignup ',
+ 'Artificial Typing Speed Account Count Velocity Alert @PostSignup ',
+ 'CMID(EC) Account Count Trend Alert @Login',
+ 'CMID(EC) Account Count Trend Alert @PostSignup',
+ 'CMID(EC) Account Count Velocity Alert @Login',
+ 'CMID(EC) Account Count Velocity Alert @PostSignup',
+ 'CMID(EC) Session Count Trend Alert @Login',
+ 'CMID(EC) Session Count Velocity Alert @Login',
+ 'CMID(NotEC) Account Count Trend Alert @Login',
+ 'CMID(NotEC) Account Count Trend Alert @PostSignup',
+ 'CMID(NotEC) Account Count Velocity Alert @Login',
+ 'CMID(NotEC) Account Count Velocity Alert @PostSignup',
+ 'CMID(NotEC) Session Count Trend Alert @Login',
+ 'CMID(NotEC) Session Count Velocity Alert @Login',
+ 'GEO Mismatch Account Count Alert @Login',
+ 'GEO Mismatch Account Count at Routing Number Level Velocity Alert @WithdrawalAttempt',
+ 'GEO Mismatch Session Count Alert @AddCC',
+ 'GEO Mismatch Session Count at Bin Level Trend Alert @AddCC',
+ 'GEO Mismatch Session Count at Bin Level Velocity Alert @AddCC',
+ 'GEO Mismatch Session Count at Routing Number Level Trend Alert @WithdrawalAttempt',
+ 'GEO Mismatch Session Count at Routing Number Level Velocity Alert @Deposit ',
+ 'IP CC Hash Count Trend Alert @AddCC',
+ 'IP CC Hash Count Velocity Alert @AddCC',
+ 'LinkerID Account Count Trend Alert @Login',
+ 'LinkerID Account Count Velocity Alert @Login',
+ 'LinkerID Session Count Trend Alert @Login',
+ 'LinkerID Session Count Velocity Alert @Login',
+ 'SubscriberID Account Count Velocity Alert @Login',
+ 'SubscriberID Account Count Velocity Alert @PostSignup',
+ 'SubscriberID Session Count Trend Alert @Login',
+ 'SubscriberID Session Count Velocity Alert @Login',
+ 'Supercookie Account Count Trend Alert @Login',
+ 'Supercookie Account Count Trend Alert @OnboardingGC',
+ 'Supercookie Account Count Trend Alert @PostSignup',
+ 'Supercookie Account Count Velocity Alert @Login',
+ 'Supercookie Account Count Velocity Alert @OnboardingGC',
+ 'Supercookie Account Count Velocity Alert @PostSignup',
+ 'Supercookie Session Count Trend Alert @Login',
+ 'Supercookie Session Count Trend Alert @OnboardingGC',
+ 'Supercookie Session Count Velocity Alert @Login',
+ 'Supercookie Session Count Velocity Alert @OnboardingGC',
+ 'Traffic alert cntry --- HoldsAssessment',
+ 'Traffic alert xclick_cntry_plus --- HoldsAssessment',
+ 'VID Account Count Trend Alert @AddCC',
+ 'VID Account Count Trend Alert @ConsolidatedFunding',
+ 'VID Account Count Trend Alert @Login',
+ 'VID Account Count Trend Alert @OnboardingGC',
+ 'VID Account Count Trend Alert @PostSignup',
+ 'VID Account Count Velocity Alert @AddCC',
+ 'VID Account Count Velocity Alert @ConsolidatedFunding',
+ 'VID Account Count Velocity Alert @Login',
+ 'VID Account Count Velocity Alert @OnboardingGC',
+ 'VID Account Count Velocity Alert @PostSignup',
+ 'VID Session Count Trend Alert @Login',
+ 'VID Session Count Trend Alert @OnboardingGC',
+ 'VID Session Count Velocity Alert @Login',
+ 'VID Session Count Velocity Alert @OnboardingGC',
+ 'VM Volume @Login',
+ 'VM Volume Alert',
+ 'VPN Volume @Login',
+ 'VPN Volume Alert',
+ 'fdcc_emulator_login']
+In [14]:
+def thresholding_algo(y, lag, threshold, influence):
+    
+#     y is alert_count in the next get_valleys function;
+#     lag, threshold, influence are all parameters in flow_valley
+    
+#     signals is used to judge in each point is peak or valley, 
+#     after judge the treshold is more than 3
+#     then judge y[i] is more or less than mean.y[0:7] or not, 
+#     if more, it will be defind as a peak
+#     if less, it will be defind as a valley
+#     in the begin, signals = [0,0,0,0,0,0,0,0,0,0,0,0,0...0,0,0]
+#     in the result, signals = array([0,0,0,1,0,0,1,0,0....0,1,0])
+#     in most cases, signals will be 0, because not more than 3sd, one ABS diff of y[i] and y[0:7] is more than 3 sd,
+#     then to judge it is 1 or -1
+    
+    signals = np.zeros(len(y))             
+    filteredY = np.array(y)
+    avgFilter = [0]*len(y)
+    stdFilter = [0]*len(y)
+    avgFilter[lag - 1] = np.mean(y[0:lag])    # when lag is 7, as the aler_court in desc, means the alert_count value in most recent 7 timestamp
+    stdFilter[lag - 1] = np.std(y[0:lag])
+
+    for i in range(lag, len(y)):
+        
+        if abs(y[i] - avgFilter[i-1]) > threshold * stdFilter [i-1]:   # when treshold is 3 means, the |Y[i] - mean.Y[0:7]| is more than 3 sd.Y[0:7]
+           
+            if y[i] > avgFilter[i-1]:
+                signals[i] = 1               
+            else:
+                signals[i] = -1              
+
+            filteredY[i] = influence * y[i] + (1 - influence) * filteredY[i-1]
+            avgFilter[i] = np.mean(filteredY[(i+1-lag):(i+1)])
+            stdFilter[i] = np.std(filteredY[(i+1-lag):(i+1)])
+        else:
+            signals[i] = 0
+            filteredY[i] = y[i]
+            avgFilter[i] = np.mean(filteredY[(i+1-lag):(i+1)])
+            stdFilter[i] = np.std(filteredY[(i+1-lag):(i+1)])
+
+    return dict(signals = np.asarray(signals),
+                avgFilter = np.asarray(avgFilter),
+                stdFilter = np.asarray(stdFilter))
+ 
+#     input is 4,including alert_count and other 3 parameters, which will be designed in flow_valley
+#     output is 3 arrays
+#     signals used to judge it is potential peak or valley by 1 and -1
+    
+#     ie.: y=[3,5,2,4,20]
+#     if influence=1
+#     filteretedY[i]=y[i]
+#     filteretedY= y 
+#     if influence=-1
+#     filteretedY[i]= 2 filtertedY[i-1] - y[i]   ??????means what?? if 1, all y; if -1, all this value
+    
+#     in whichever case, the other 2 outputs will be array of each 7 duration of filteredY avg and std
+    
+#     the output, only signals is used in get_valleys function, the other output not being used. They are potentially 
+#     to be used in get_valley function in the original drafts.
+In [ ]:
+
+In [15]:
+def get_valleys(query_dict, imageName, force_plot=False):
+    
+#     input is 3, query_dict is the flow in valley_flow, get_valleys is used under valley_flow, there pass query_dict = low 
+#     by calling pet_valleys function.
+#     also get imageName = "img/{}_layer.png".format(flow['layer']) under valley_flow, is the second pair in the dict, 
+#     imageName is the value of 'alert_name' in second pair
+    
+    lag = query_dict['lag']
+    threshold = query_dict['threshold']
+    influence = query_dict['influence']
+    column = query_dict['column']
+    
+    df = get_table3(table2)     
+   
+#     need to pass table3 to df here, df = get_table3(df)
+#     get_table3() is function of getting table3
+   
+                           
+    alert_count = df[column].tolist()
+    
+    d = df['alert_timestamp'].tolist()   # d is timestamp column transfer to list, d is time
+    
+#     d = df.index.tolist()
+
+    alert_count = np.array(alert_count).astype(np.float)
+    
+    result = thresholding_algo(alert_count, lag=lag, threshold=threshold, influence=influence)
+                                          # go back to line 
+                                          # return dict(signals = np.asarray(signals),
+                                                    # avgFilter = np.asarray(avgFilter),
+                                                    # stdFilter = np.asarray(stdFilter))
+    
+    if result['signals'][-1]==1 or force_plot:
+        
+        plot_valleys(query_dict,result,alert_count, d, imageName)  # d = df['alert_date'].tolist()
+        # refering the next plot_valleys function, alert_count = t in the next function
+        
+        return [d[-1],query_dict['alert_name'],alert_count[-1], alert_count[-8:], d[-8:]]
+ 
+#  return is 5 values
+#  d is timestamp list, 
+#  last timestamp, alert_name is second pair in valley_flow, last alert_count, last 7 alert_count, last 7 timestamp
+In [16]:
+# with 30 points in this function__original
+
+def plot_valleys(query_dict,result,t,d, imageName):    # d = df['alert_date'].tolist()    
+#     input are 7
+#     1.query_dict is in VALLEY_flow, same as in get_valley function
+#     2.result is the 3 array for result in thresholding_algo
+#     3.t is alert_count refering the line above return in get_valleys function.
+#     4.d is d = df['alert_date'].tolist() under get_valleys function
+#     5.ts_valleys is timestamp value in d, being appended to ts_valleys, by for loop and judge for signal under get_valleys
+#     6.valleys is aler_count value, or 1 and -1 value??????? it is appended in the same way as ts_peak
+#     7.get imageName = "img/{}_layer.png".format(flow['layer']) under valley_flow, is the second pair in the dict, 
+#     imageName is the value of 'alert_name' in second pair
+    y = list(table3[query_dict['alert_name']])
+    y1 = list(map(int, y))
+    Y = np.array(y1)
+    avg_y = np.mean(Y[1:61])  
+    std_y = np.std(Y[1:61])
+  
+    plt.figure(figsize=(16, 8))                           # d = df['alert_date'].tolist()   
+    plt.plot(d[0:60], t[0:60], label='Alert_count')  # should we change a name of the visual title?? t is alert_account
+    plt.plot(d[0], t[0],"ro", label='Valley')
+    plt.legend(fontsize=12)
+    plt.ylabel('Alert Count', fontsize=14)
+    plt.xlabel('Timestamp',fontsize=14)
+    plt.title(query_dict['alert_name'], fontsize=18)
+    plt.axhline(y = avg_y - query_dict['threshold']* std_y, color = 'b', linestyle = 'dotted')
+    plt.savefig(imageName, bbox_inches = "tight")
+    
+    return plt
+In [17]:
+def format_query(txt,*args):
+    """
+    Format query text based on *args
+    """
+    formatted = txt.format(*args)
+    return formatted
+In [18]:
+#Alerts
+# my_logger.info('Starting Alerts Script')
+In [19]:
+alert_name_list = list(table3)[1:]
+len(alert_name_list)
+Out[19]:
+64
+In [20]:
+alert_name_list
+Out[20]:
+['Account Creation IP Mismatch Volume Alert - by Geo Country',
+ 'Account creation volume with disposable emails',
+ 'Artificial Typing Speed Account Count Trend Alert @PostSignup ',
+ 'Artificial Typing Speed Account Count Velocity Alert @PostSignup ',
+ 'CMID(EC) Account Count Trend Alert @Login',
+ 'CMID(EC) Account Count Trend Alert @PostSignup',
+ 'CMID(EC) Account Count Velocity Alert @Login',
+ 'CMID(EC) Account Count Velocity Alert @PostSignup',
+ 'CMID(EC) Session Count Trend Alert @Login',
+ 'CMID(EC) Session Count Velocity Alert @Login',
+ 'CMID(NotEC) Account Count Trend Alert @Login',
+ 'CMID(NotEC) Account Count Trend Alert @PostSignup',
+ 'CMID(NotEC) Account Count Velocity Alert @Login',
+ 'CMID(NotEC) Account Count Velocity Alert @PostSignup',
+ 'CMID(NotEC) Session Count Trend Alert @Login',
+ 'CMID(NotEC) Session Count Velocity Alert @Login',
+ 'GEO Mismatch Account Count Alert @Login',
+ 'GEO Mismatch Account Count at Routing Number Level Velocity Alert @WithdrawalAttempt',
+ 'GEO Mismatch Session Count Alert @AddCC',
+ 'GEO Mismatch Session Count at Bin Level Trend Alert @AddCC',
+ 'GEO Mismatch Session Count at Bin Level Velocity Alert @AddCC',
+ 'GEO Mismatch Session Count at Routing Number Level Trend Alert @WithdrawalAttempt',
+ 'GEO Mismatch Session Count at Routing Number Level Velocity Alert @Deposit ',
+ 'IP CC Hash Count Trend Alert @AddCC',
+ 'IP CC Hash Count Velocity Alert @AddCC',
+ 'LinkerID Account Count Trend Alert @Login',
+ 'LinkerID Account Count Velocity Alert @Login',
+ 'LinkerID Session Count Trend Alert @Login',
+ 'LinkerID Session Count Velocity Alert @Login',
+ 'SubscriberID Account Count Velocity Alert @Login',
+ 'SubscriberID Account Count Velocity Alert @PostSignup',
+ 'SubscriberID Session Count Trend Alert @Login',
+ 'SubscriberID Session Count Velocity Alert @Login',
+ 'Supercookie Account Count Trend Alert @Login',
+ 'Supercookie Account Count Trend Alert @OnboardingGC',
+ 'Supercookie Account Count Trend Alert @PostSignup',
+ 'Supercookie Account Count Velocity Alert @Login',
+ 'Supercookie Account Count Velocity Alert @OnboardingGC',
+ 'Supercookie Account Count Velocity Alert @PostSignup',
+ 'Supercookie Session Count Trend Alert @Login',
+ 'Supercookie Session Count Trend Alert @OnboardingGC',
+ 'Supercookie Session Count Velocity Alert @Login',
+ 'Supercookie Session Count Velocity Alert @OnboardingGC',
+ 'Traffic alert cntry --- HoldsAssessment',
+ 'Traffic alert xclick_cntry_plus --- HoldsAssessment',
+ 'VID Account Count Trend Alert @AddCC',
+ 'VID Account Count Trend Alert @ConsolidatedFunding',
+ 'VID Account Count Trend Alert @Login',
+ 'VID Account Count Trend Alert @OnboardingGC',
+ 'VID Account Count Trend Alert @PostSignup',
+ 'VID Account Count Velocity Alert @AddCC',
+ 'VID Account Count Velocity Alert @ConsolidatedFunding',
+ 'VID Account Count Velocity Alert @Login',
+ 'VID Account Count Velocity Alert @OnboardingGC',
+ 'VID Account Count Velocity Alert @PostSignup',
+ 'VID Session Count Trend Alert @Login',
+ 'VID Session Count Trend Alert @OnboardingGC',
+ 'VID Session Count Velocity Alert @Login',
+ 'VID Session Count Velocity Alert @OnboardingGC',
+ 'VM Volume @Login',
+ 'VM Volume Alert',
+ 'VPN Volume @Login',
+ 'VPN Volume Alert',
+ 'fdcc_emulator_login']
+In [4]:
+mylist = alert_name_list
+
+valley_flow_test1 = []
+
+lag = 60
+threshold = 1.5
+influence = -1
+mode1 = 'Peaks'
+mode2 = 'Valley'
+
+for i in range(len(alert_name_list)):
+    dict = {}
+    dict['column'] = mylist[i]
+    dict['alert_name'] = mylist[i]
+    dict['lag'] = lag
+    dict['threshold'] = threshold
+    dict['influence'] = influence
+    if influence == -1:
+        dict['mode'] = mode2
+    else:
+        dict['mode'] = mode1
+    valley_flow_test1.append(dict)
+    del(dict)
+
+
+print(valley_flow_test1[:15])
+NameError: name 'alert_name_list' is not defined
+In [ ]:
+
+In [22]:
+valley_flow2 = valley_flow_test1
+
+
+
+for flow in valley_flow2:
+    y = list(table3[flow['alert_name']])
+    y1 = list(map(int, y))
+    Y = np.array(y1)
+    avg_y = np.mean(Y[1:61])  
+    std_y = np.std(Y[1:61])
+    if std_y == 0:
+        threshold = 0
+    else:
+        threshold = (y1[0] - avg_y) / std_y
+
+#     threshold = abs(y1[0] - avg_y) / std_y
+    if threshold < -1.5:
+        print('yes')
+        print('threshold is')
+        print(threshold)
+        print(flow['alert_name'])
+        print(y1[0:15])
+        print('Valley for {}. Email sent.'.format(flow['alert_name']))
+        print(' ')
+        
+    else:
+        print('no')
+        print('threshold is')
+        print(threshold)
+        print(flow['alert_name'])
+        print(y1[0:15])
+        print('NO valley for {}. No email to sent.'.format(flow['alert_name'])) 
+        print(' ')
+no
+threshold is
+-0.4189693805120381
+Account Creation IP Mismatch Volume Alert - by Geo Country
+[0, 0, 0, 311, 4775, 0, 0, 0, 0, 0, 0, 1433, 628, 4223, 0]
+NO valley for Account Creation IP Mismatch Volume Alert - by Geo Country. No email to sent.
+ 
+no
+threshold is
+1.690967332576953
+Account creation volume with disposable emails
+[568, 0, 333, 303, 0, 0, 0, 0, 571, 2251, 0, 0, 0, 0, 0]
+NO valley for Account creation volume with disposable emails. No email to sent.
+ 
+no
+threshold is
+-0.13018891098082386
+Artificial Typing Speed Account Count Trend Alert @PostSignup 
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for Artificial Typing Speed Account Count Trend Alert @PostSignup . No email to sent.
+ 
+no
+threshold is
+-0.1460741095605164
+Artificial Typing Speed Account Count Velocity Alert @PostSignup 
+[0, 0, 17, 16, 17, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0]
+NO valley for Artificial Typing Speed Account Count Velocity Alert @PostSignup . No email to sent.
+ 
+no
+threshold is
+0
+CMID(EC) Account Count Trend Alert @Login
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for CMID(EC) Account Count Trend Alert @Login. No email to sent.
+ 
+no
+threshold is
+-0.2063168771513655
+CMID(EC) Account Count Trend Alert @PostSignup
+[0, 361, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for CMID(EC) Account Count Trend Alert @PostSignup. No email to sent.
+ 
+no
+threshold is
+-0.13018891098082389
+CMID(EC) Account Count Velocity Alert @Login
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 590, 0, 0]
+NO valley for CMID(EC) Account Count Velocity Alert @Login. No email to sent.
+ 
+no
+threshold is
+0.5643232899438967
+CMID(EC) Account Count Velocity Alert @PostSignup
+[719, 1439, 594, 960, 739, 612, 748, 1162, 1165, 1024, 780, 1356, 1674, 518, 340]
+NO valley for CMID(EC) Account Count Velocity Alert @PostSignup. No email to sent.
+ 
+no
+threshold is
+-0.13018891098082386
+CMID(EC) Session Count Trend Alert @Login
+[0, 0, 0, 0, 0, 213, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for CMID(EC) Session Count Trend Alert @Login. No email to sent.
+ 
+no
+threshold is
+-0.13018891098082389
+CMID(EC) Session Count Velocity Alert @Login
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 590, 0, 0]
+NO valley for CMID(EC) Session Count Velocity Alert @Login. No email to sent.
+ 
+no
+threshold is
+0.09261269385456004
+CMID(NotEC) Account Count Trend Alert @Login
+[5364, 6504, 8861, 6858, 6983, 6502, 7866, 4322, 5454, 7211, 6293, 7580, 5672, 7070, 5699]
+NO valley for CMID(NotEC) Account Count Trend Alert @Login. No email to sent.
+ 
+no
+threshold is
+0
+CMID(NotEC) Account Count Trend Alert @PostSignup
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for CMID(NotEC) Account Count Trend Alert @PostSignup. No email to sent.
+ 
+no
+threshold is
+-0.3566767630790003
+CMID(NotEC) Account Count Velocity Alert @Login
+[0, 0, 0, 0, 0, 0, 0, 81, 0, 124, 0, 0, 0, 96, 0]
+NO valley for CMID(NotEC) Account Count Velocity Alert @Login. No email to sent.
+ 
+no
+threshold is
+-0.20840226537724543
+CMID(NotEC) Account Count Velocity Alert @PostSignup
+[0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0, 0, 0, 0]
+NO valley for CMID(NotEC) Account Count Velocity Alert @PostSignup. No email to sent.
+ 
+no
+threshold is
+-0.13018891098082386
+CMID(NotEC) Session Count Trend Alert @Login
+[0, 0, 0, 0, 0, 8080, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for CMID(NotEC) Session Count Trend Alert @Login. No email to sent.
+ 
+no
+threshold is
+-0.1301889109808238
+CMID(NotEC) Session Count Velocity Alert @Login
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for CMID(NotEC) Session Count Velocity Alert @Login. No email to sent.
+ 
+no
+threshold is
+-0.2306253315373894
+GEO Mismatch Account Count Alert @Login
+[0, 0, 0, 0, 0, 1062, 1280, 6261, 0, 0, 1243, 0, 0, 4062, 3824]
+NO valley for GEO Mismatch Account Count Alert @Login. No email to sent.
+ 
+no
+threshold is
+2.2395190275915575
+GEO Mismatch Account Count at Routing Number Level Velocity Alert @WithdrawalAttempt
+[4434, 1032, 3184, 0, 3504, 1115, 4712, 1137, 2770, 1438, 3222, 889, 4022, 845, 3831]
+NO valley for GEO Mismatch Account Count at Routing Number Level Velocity Alert @WithdrawalAttempt. No email to sent.
+ 
+no
+threshold is
+-0.13018891098082383
+GEO Mismatch Session Count Alert @AddCC
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10120]
+NO valley for GEO Mismatch Session Count Alert @AddCC. No email to sent.
+ 
+no
+threshold is
+-0.1851495094800149
+GEO Mismatch Session Count at Bin Level Trend Alert @AddCC
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for GEO Mismatch Session Count at Bin Level Trend Alert @AddCC. No email to sent.
+ 
+no
+threshold is
+-0.6332302675649385
+GEO Mismatch Session Count at Bin Level Velocity Alert @AddCC
+[0, 0, 0, 700, 0, 0, 0, 0, 0, 0, 0, 9506, 16831, 9261, 17150]
+NO valley for GEO Mismatch Session Count at Bin Level Velocity Alert @AddCC. No email to sent.
+ 
+no
+threshold is
+0
+GEO Mismatch Session Count at Routing Number Level Trend Alert @WithdrawalAttempt
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for GEO Mismatch Session Count at Routing Number Level Trend Alert @WithdrawalAttempt. No email to sent.
+ 
+no
+threshold is
+0
+GEO Mismatch Session Count at Routing Number Level Velocity Alert @Deposit 
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for GEO Mismatch Session Count at Routing Number Level Velocity Alert @Deposit . No email to sent.
+ 
+no
+threshold is
+-0.1346956168463303
+IP CC Hash Count Trend Alert @AddCC
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13370, 0, 0, 0]
+NO valley for IP CC Hash Count Trend Alert @AddCC. No email to sent.
+ 
+no
+threshold is
+-0.26825189416436207
+IP CC Hash Count Velocity Alert @AddCC
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for IP CC Hash Count Velocity Alert @AddCC. No email to sent.
+ 
+no
+threshold is
+0
+LinkerID Account Count Trend Alert @Login
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for LinkerID Account Count Trend Alert @Login. No email to sent.
+ 
+no
+threshold is
+-0.2279537063531715
+LinkerID Account Count Velocity Alert @Login
+[0, 0, 0, 41, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for LinkerID Account Count Velocity Alert @Login. No email to sent.
+ 
+no
+threshold is
+-0.2193936060066246
+LinkerID Session Count Trend Alert @Login
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for LinkerID Session Count Trend Alert @Login. No email to sent.
+ 
+no
+threshold is
+0.16141109285473335
+LinkerID Session Count Velocity Alert @Login
+[1598, 430, 194, 215, 174, 139, 305, 0, 408, 132, 389, 149, 264, 1070, 325]
+NO valley for LinkerID Session Count Velocity Alert @Login. No email to sent.
+ 
+no
+threshold is
+-0.2694551737983685
+SubscriberID Account Count Velocity Alert @Login
+[1, 0, 0, 9, 24, 16, 20, 7, 18, 0, 0, 0, 0, 0, 0]
+NO valley for SubscriberID Account Count Velocity Alert @Login. No email to sent.
+ 
+no
+threshold is
+-0.13018891098082389
+SubscriberID Account Count Velocity Alert @PostSignup
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0]
+NO valley for SubscriberID Account Count Velocity Alert @PostSignup. No email to sent.
+ 
+no
+threshold is
+0
+SubscriberID Session Count Trend Alert @Login
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for SubscriberID Session Count Trend Alert @Login. No email to sent.
+ 
+no
+threshold is
+1.0059413763718106
+SubscriberID Session Count Velocity Alert @Login
+[2288, 0, 0, 225, 696, 389, 599, 290, 455, 0, 0, 0, 0, 0, 0]
+NO valley for SubscriberID Session Count Velocity Alert @Login. No email to sent.
+ 
+no
+threshold is
+-0.41227537169777034
+Supercookie Account Count Trend Alert @Login
+[0, 1467, 3245, 5624, 0, 0, 0, 728, 1208, 604, 0, 1249, 0, 3956, 813]
+NO valley for Supercookie Account Count Trend Alert @Login. No email to sent.
+ 
+no
+threshold is
+-0.33314079976829947
+Supercookie Account Count Trend Alert @OnboardingGC
+[0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for Supercookie Account Count Trend Alert @OnboardingGC. No email to sent.
+ 
+no
+threshold is
+-0.13018891098082389
+Supercookie Account Count Trend Alert @PostSignup
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for Supercookie Account Count Trend Alert @PostSignup. No email to sent.
+ 
+no
+threshold is
+-0.225644099747924
+Supercookie Account Count Velocity Alert @Login
+[0, 211, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 590, 219, 0]
+NO valley for Supercookie Account Count Velocity Alert @Login. No email to sent.
+ 
+no
+threshold is
+-0.39129334731196974
+Supercookie Account Count Velocity Alert @OnboardingGC
+[0, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 5, 0, 6, 0]
+NO valley for Supercookie Account Count Velocity Alert @OnboardingGC. No email to sent.
+ 
+no
+threshold is
+0.006745745913335531
+Supercookie Account Count Velocity Alert @PostSignup
+[165, 624, 351, 616, 114, 0, 0, 0, 54, 0, 0, 0, 588, 220, 0]
+NO valley for Supercookie Account Count Velocity Alert @PostSignup. No email to sent.
+ 
+no
+threshold is
+1.1655617560199845
+Supercookie Session Count Trend Alert @Login
+[2847, 0, 2809, 5355, 0, 7958, 0, 0, 0, 0, 0, 2574, 0, 2674, 0]
+NO valley for Supercookie Session Count Trend Alert @Login. No email to sent.
+ 
+no
+threshold is
+-0.5701426498723858
+Supercookie Session Count Trend Alert @OnboardingGC
+[0, 0, 0, 0, 0, 49, 0, 0, 0, 0, 50, 0, 0, 0, 91]
+NO valley for Supercookie Session Count Trend Alert @OnboardingGC. No email to sent.
+ 
+no
+threshold is
+-0.2055775329290935
+Supercookie Session Count Velocity Alert @Login
+[0, 211, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 219, 0]
+NO valley for Supercookie Session Count Velocity Alert @Login. No email to sent.
+ 
+no
+threshold is
+1.0723061207494218
+Supercookie Session Count Velocity Alert @OnboardingGC
+[9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for Supercookie Session Count Velocity Alert @OnboardingGC. No email to sent.
+ 
+no
+threshold is
+-0.24827460307265384
+Traffic alert cntry --- HoldsAssessment
+[0, 0, 0, 13946, 0, 0, 0, 4913, 0, 38375, 0, 5995, 0, 0, 0]
+NO valley for Traffic alert cntry --- HoldsAssessment. No email to sent.
+ 
+no
+threshold is
+-0.31740528875591045
+Traffic alert xclick_cntry_plus --- HoldsAssessment
+[0, 0, 0, 0, 0, 4668, 0, 2206, 0, 0, 0, 0, 0, 0, 0]
+NO valley for Traffic alert xclick_cntry_plus --- HoldsAssessment. No email to sent.
+ 
+no
+threshold is
+-0.31340948384898537
+VID Account Count Trend Alert @AddCC
+[0, 0, 0, 0, 0, 0, 0, 1337, 0, 1094, 1409, 0, 0, 2355, 0]
+NO valley for VID Account Count Trend Alert @AddCC. No email to sent.
+ 
+no
+threshold is
+-0.6959065927565846
+VID Account Count Trend Alert @ConsolidatedFunding
+[0, 0, 0, 0, 0, 0, 0, 0, 441, 0, 0, 0, 0, 0, 0]
+NO valley for VID Account Count Trend Alert @ConsolidatedFunding. No email to sent.
+ 
+no
+threshold is
+-0.25374837035375164
+VID Account Count Trend Alert @Login
+[0, 665, 1718, 6279, 0, 0, 0, 4682, 0, 0, 0, 0, 0, 0, 0]
+NO valley for VID Account Count Trend Alert @Login. No email to sent.
+ 
+no
+threshold is
+0.024166471330662246
+VID Account Count Trend Alert @OnboardingGC
+[549, 429, 720, 531, 729, 207, 715, 481, 518, 280, 488, 596, 702, 201, 745]
+NO valley for VID Account Count Trend Alert @OnboardingGC. No email to sent.
+ 
+no
+threshold is
+-0.13018891098082383
+VID Account Count Trend Alert @PostSignup
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for VID Account Count Trend Alert @PostSignup. No email to sent.
+ 
+no
+threshold is
+-0.3682585340952792
+VID Account Count Velocity Alert @AddCC
+[0, 318, 0, 432, 0, 0, 0, 0, 0, 129, 0, 165, 590, 222, 0]
+NO valley for VID Account Count Velocity Alert @AddCC. No email to sent.
+ 
+no
+threshold is
+-0.45917790440947515
+VID Account Count Velocity Alert @ConsolidatedFunding
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for VID Account Count Velocity Alert @ConsolidatedFunding. No email to sent.
+ 
+no
+threshold is
+-0.8983114476257125
+VID Account Count Velocity Alert @Login
+[410, 529, 3798, 6463, 7635, 6881, 14824, 17814, 11297, 12732, 8704, 5662, 8542, 9482, 9528]
+NO valley for VID Account Count Velocity Alert @Login. No email to sent.
+ 
+no
+threshold is
+-0.857833815749923
+VID Account Count Velocity Alert @OnboardingGC
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for VID Account Count Velocity Alert @OnboardingGC. No email to sent.
+ 
+no
+threshold is
+-0.29219186937341596
+VID Account Count Velocity Alert @PostSignup
+[0, 525, 0, 562, 0, 0, 0, 0, 54, 0, 0, 0, 588, 220, 0]
+NO valley for VID Account Count Velocity Alert @PostSignup. No email to sent.
+ 
+no
+threshold is
+-0.1713618779443462
+VID Session Count Trend Alert @Login
+[0, 0, 0, 0, 0, 12540, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for VID Session Count Trend Alert @Login. No email to sent.
+ 
+no
+threshold is
+-0.367612991064127
+VID Session Count Trend Alert @OnboardingGC
+[135, 0, 253, 0, 0, 0, 130, 279, 0, 0, 120, 0, 0, 0, 367]
+NO valley for VID Session Count Trend Alert @OnboardingGC. No email to sent.
+ 
+no
+threshold is
+-0.6282365469528808
+VID Session Count Velocity Alert @Login
+[2906, 430, 9058, 16297, 17559, 16289, 35086, 35625, 35178, 41389, 24175, 15417, 17924, 30328, 24805]
+NO valley for VID Session Count Velocity Alert @Login. No email to sent.
+ 
+no
+threshold is
+-0.7991852234427831
+VID Session Count Velocity Alert @OnboardingGC
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for VID Session Count Velocity Alert @OnboardingGC. No email to sent.
+ 
+no
+threshold is
+0
+VM Volume @Login
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for VM Volume @Login. No email to sent.
+ 
+no
+threshold is
+-0.24629570543696216
+VM Volume Alert
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for VM Volume Alert. No email to sent.
+ 
+no
+threshold is
+-0.5874762331945462
+VPN Volume @Login
+[0, 0, 0, 86342, 0, 0, 262028, 0, 0, 217620, 87226, 0, 152836, 126225, 135382]
+NO valley for VPN Volume @Login. No email to sent.
+ 
+no
+threshold is
+-0.2873843100162454
+VPN Volume Alert
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2593, 0]
+NO valley for VPN Volume Alert. No email to sent.
+ 
+no
+threshold is
+-0.17405112594235309
+fdcc_emulator_login
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+NO valley for fdcc_emulator_login. No email to sent.
+ 
+In [23]:
+# table3_1=table3.iloc[14: , :]
+# name_list1 = list(table3_1)
+# alert_name_list = list(table3_1)[1:]
+
+# mylist = alert_name_list
+
+# valley_flow_test1 = []
+
+# lag = 14
+# threshold = 3
+# influence = 1
+# mode1 = 'Peaks'
+# mode2 = 'Valley'
+
+# for i in range(len(alert_name_list)):
+#     dict = {}
+#     dict['column'] = mylist[i]
+#     dict['alert_name'] = mylist[i]
+#     dict['lag'] = lag
+#     dict['threshold'] = threshold
+#     dict['influence'] = influence
+#     if influence == 1:
+#         dict['mode'] = mode1
+#     else:
+#         dict['mode'] = mode2
+#     valley_flow_test1.append(dict)
+#     del(dict)
+
+# valley_flow2 = valley_flow_test1
+
+
+
+# for flow in valley_flow2:
+#     y = list(table3_1[flow['alert_name']])
+#     y1 = list(map(int, y))
+#     Y = np.array(y1)
+#     avg_y = np.mean(Y[1:61])  
+#     std_y = np.std(Y[1:61])
+#     if std_y == 0:
+#         threshold = 0
+#     else:
+#         threshold = (y1[0] - avg_y) / std_y
+        
+# #  count how many 'yes'
+
+# result_1_5 = []
+# if threshold < -1.5:
+#     i = 'yes'
+# else:
+#     i = 'no'     
+#     result_1_5.append(i)
+    
+# count_yes = result_1_5.count('yes')
+# print(result_1_5)
+# print('Count of under 1.5 std:', count_yes)
+In [24]:
+# 3sd, lag =3
+# del (dict)
+valley_flow2 = valley_flow_test1
+
+for flow in valley_flow2:
+
+     
+    imageName = "img1.5_V/{}_AlertType.png".format(flow['alert_name'])
+    result = get_valleys(flow, imageName, force_plot=True)
+/etl/LVS/dmetldata11/scaas/anaconda3/lib/python3.5/site-packages/matplotlib/pyplot.py:537: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  max_open_warning, RuntimeWarning)
+ 
+ 
+ 
+
+ 
+In [ ]:
+
+In [25]:
+dict_link = {'Account Creation IP Mismatch Volume Alert - by Geo Country':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/alertDetail/5e901b70014b580dc478052b',
+ 'Account creation volume with disposable emails':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/alertDetail/5e9d74a9014b580dc47809aa',
+ 'Artificial Typing Speed Account Count Velocity Alert @PostSignup ':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/6055a265fff22e949c7515e0',
+ 'Artificial Typing Speed Account Count Trend Alert @PostSignup ':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/6055936cfff22e949c7515ca',
+ 'CMID(EC) Account Count Trend Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/6055ad92fff22e949c7515ec',
+ 'CMID(EC) Account Count Trend Alert @PostSignup':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/6055936cfff22e949c7515ca',
+ 'CMID(EC) Account Count Velocity Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/60559e6bfff22e949c7515d9',
+ 'CMID(EC) Account Count Velocity Alert @PostSignup':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/605599e1fff22e949c7515d3',
+ 'CMID(EC) Session Count Trend Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/6055ae5dfff22e949c7515f1',
+ 'CMID(EC) Session Count Velocity Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/6055ab29fff22e949c7515e5',
+ 'CMID(NotEC) Account Count Trend Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/6055ad92fff22e949c7515ec',
+ 'CMID(NotEC) Account Count Trend Alert @PostSignup':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/6055936cfff22e949c7515ca',
+ 'CMID(NotEC) Account Count Velocity Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/60559e98fff22e949c7515db',
+ 'CMID(NotEC) Account Count Velocity Alert @PostSignup':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/60559a5ffff22e949c7515d5',
+ 'CMID(NotEC) Session Count Trend Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/6055ae5dfff22e949c7515f1',
+ 'CMID(NotEC) Session Count Velocity Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/6055b01ffff22e949c7515f3',
+ 'GEO Mismatch Account Count Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/60b869ee5c92b118685688aa',
+ 'GEO Mismatch Account Count at Routing Number Level Velocity Alert @WithdrawalAttempt':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/609e2af6382d2f1adddc2038',
+ 'GEO Mismatch Session Count Alert @AddCC':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/608240c74449ad172dd36aa9',
+ 'GEO Mismatch Session Count Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/60b870d55c92b118685688b2',
+ 'GEO Mismatch Session Count at Bin Level Trend Alert @AddCC':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/6082425c4449ad172dd36aae',
+ 'GEO Mismatch Session Count at Bin Level Velocity Alert @AddCC':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/6082432a4449ad172dd36ab5',
+ 'GEO Mismatch Session Count at Routing Number Level Trend Alert @WithdrawalAttempt':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/609e2ce3382d2f1adddc203d',
+ 'GEO Mismatch Session Count at Routing Number Level Velocity Alert @Deposit ':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/609e0f94382d2f1adddc1fe9',
+ 'GEO Mismatch Session Count at Routing Number Level Velocity Alert @WithdrawalAttempt':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/609e2eba382d2f1adddc2043',
+ 'IP CC Hash Count Trend Alert @AddCC':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/607949144449ad172dd36343',
+ 'IP CC Hash Count Velocity Alert @AddCC':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/60794b054449ad172dd36349',
+ 'LinkerID Account Count Trend Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/6055ad92fff22e949c7515ec',
+ 'LinkerID Account Count Velocity Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/6046f39ca02ddf1b419e3613',
+ 'LinkerID Session Count Trend Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/6055ae5dfff22e949c7515f1',
+ 'LinkerID Session Count Velocity Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/60559ef6fff22e949c7515dd',
+ 'SubscriberID Account Count Velocity Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/60559d9cfff22e949c7515d7',
+ 'SubscriberID Account Count Velocity Alert @PostSignup':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/6055993dfff22e949c7515d1',
+ 'SubscriberID Session Count Trend Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/6055ae5dfff22e949c7515f1',
+ 'SubscriberID Session Count Velocity Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/6055a7a6fff22e949c7515e2',
+ 'Supercookie Account Count Trend Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/608ba207382d2f1adddc176e',
+ 'Supercookie Account Count Trend Alert @OnboardingGC':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/60b0a3235c92b11868568472',
+ 'Supercookie Account Count Trend Alert @PostSignup':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/608b6c48382d2f1adddc1736',
+ 'Supercookie Account Count Velocity Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/608ba45e382d2f1adddc1776',
+ 'Supercookie Account Count Velocity Alert @OnboardingGC':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/60b0ac1a5c92b1186856848a',
+ 'Supercookie Account Count Velocity Alert @PostSignup':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/608b7740382d2f1adddc1741',
+ 'Supercookie Session Count Trend Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/608ba6f9382d2f1adddc177d',
+ 'Supercookie Session Count Trend Alert @OnboardingGC':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/60b0af085c92b11868568495',
+ 'Supercookie Session Count Velocity Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/608ba968382d2f1adddc178a',
+ 'Supercookie Session Count Velocity Alert @OnboardingGC':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/60b0b0765c92b1186856849d',
+ 'Traffic alert cntry --- HoldsAssessment':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/alertDetail/5e1fedcf7d9718bc4821f788',
+ 'Traffic alert xclick_cntry_plus --- HoldsAssessment':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/alertDetail/5e1fedcd7d9718bc4821f77b',
+ 'VID Account Count Trend Alert @AddCC':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/60c02a475c92b11868568d48',
+ 'VID Account Count Trend Alert @ConsolidatedFunding':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/60bdd6215c92b11868568b16',
+ 'VID Account Count Trend Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/6082441c4449ad172dd36abb',
+ 'VID Account Count Trend Alert @OnboardingGC':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/60b484435c92b11868568573',
+ 'VID Account Count Trend Alert @PostSignup':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/608b5faf382d2f1adddc1724',
+ 'VID Account Count Velocity Alert @AddCC':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/60c0301c5c92b11868568d5e',
+ 'VID Account Count Velocity Alert @ConsolidatedFunding':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/60bdd7ba5c92b11868568b19',
+ 'VID Account Count Velocity Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/608245334449ad172dd36ac1',
+ 'VID Account Count Velocity Alert @OnboardingGC':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/60b488895c92b1186856857b',
+ 'VID Account Count Velocity Alert @PostSignup':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/608b6449382d2f1adddc172c',
+ 'VID Session Count Trend Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/608245fb4449ad172dd36ac5',
+ 'VID Session Count Trend Alert @OnboardingGC':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/60b48ab15c92b11868568581',
+ 'VID Session Count Velocity Alert @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/608246ea4449ad172dd36acd',
+ 'VID Session Count Velocity Alert @OnboardingGC':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/60b48d1f5c92b11868568588',
+ 'VM Volume @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/chartDetail/5f449f65a4f555338c0a2a12',
+ 'VM Volume Alert':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/alertDetail/5f4e29b9a4f555338c0a2e6e',
+ 'VPN Volume @Login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/alertDetail/5f4e29b9a4f555338c0a2e6e',
+ 'VPN Volume Alert':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/alertDetail/5f476cd8a4f555338c0a2b9f',            
+ 'fdcc_emulator_login':'https://phx-spias-u01.paypalcorp.com/spider/index.html#/alertDetail/5ffeb8fa168ae11877e8d345'}
+In [26]:
+len(dict_link)
+Out[26]:
+66
+In [27]:
+# version 2.0
+
+valleys_template = """
+<html>
+<head>
+<style>
+table {18}
+
+td, th {19}
+
+tr:nth-child(even) {20}
+</style>
+</head>
+<body>
+
+<p> {0} has a valley at {2} EST with {1:,} count. </p>
+<p> The 12 HOURS COUNT result for the {0} is less than ONE POINT FIVE standard deviation under last SEVEN days' average. </p>                                                               
+<p> Find the dashboard here: {21} </p> 
+<p> * Result delay caused by data latency. </p> 
+
+<table>
+<caption style='text-align:center'>Results - Past Seven Checks</caption>
+  <tr>
+    <th style='text-align:center'>{9}</th>
+    <th style='text-align:center'>{8}</th>
+    <th style='text-align:center'>{7}</th>
+    <th style='text-align:center'>{6}</th>
+    <th style='text-align:center'>{5}</th>
+    <th style='text-align:center'>{4}</th>
+    <th style='text-align:center'>{3}</th>
+    <th style='text-align:center'>{2}</th>
+  </tr>
+  <tr>
+    <td style='text-align:center'>{17:,}</td>
+    <td style='text-align:center'>{16:,}</td>
+    <td style='text-align:center'>{15:,}</td>
+    <td style='text-align:center'>{14:,}</td>
+    <td style='text-align:center'>{13:,}</td>
+    <td style='text-align:center'>{12:,}</td>
+    <td style='text-align:center'>{11:,}</td>
+    <td style='text-align:center;background-color:#00FF00'>{10:,}</td>
+  </tr>
+ 
+</table>
+<br>
+See attachment for visualization chart.
+<p> FDCC Data Engineering Team
+</body>
+</html>
+"""
+In [ ]:
+valley_flow2 = valley_flow_test1
+
+
+# print(imageName)
+
+
+for flow in valley_flow2:
+    imageName = "img1.5_V/{}_AlertType.png".format(flow['alert_name'])  
+    result = get_valleys(flow, imageName)
+    
+    
+    y = list(table3[flow['alert_name']])
+    y1 = list(map(int, y))
+    Y = np.array(y1)
+    avg_y = np.mean(Y[1:61])  
+    std_y = np.std(Y[1:61])
+    if std_y == 0:
+        threshold = 0
+    else:
+        threshold = (y1[0] - avg_y) / std_y
+
+    if threshold < -1.5:
+        layer = str(flow['alert_name']) 
+        valley = int(list(table3[flow['alert_name']])[0])
+        days = [d.strftime("%m/%d/%Y, %H:%M:%S") for d in list(table3['alert_timestamp'])[:10]]
+        num = [int(n) for n in list(table3[flow['alert_name']])[:10]]
+        
+        table = """
+        {font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 80%;}
+        """
+        
+        tb = """
+        {border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;}
+        """
+        
+        back = """
+        {background-color: #dddddd;}
+        """
+
+#         doc_link = """
+#         <p><a href='https://engineering.paypalcorp.com/confluence/display/SRPMO/Add+Card+Metrics' > Methodology </a></p>
+#         """
+    
+        k = flow['alert_name']
+        dict_link[k]
+    
+
+        email_text = (format_query(valleys_template, layer, valley, 
+                           days[0], days[1], days[2], days[3], days[4], days[5], days[6], days[7],
+                           num[0], num[1], num[2], num[3], num[4], num[5], num[6], num[7],
+                           str(table), str(tb), str(back))) 
+       
+        subject = "Valley - {0}".format(flow['alert_name'])
+        
+        
+        
+#         %sendmail -to "yalyan@paypal.com" -cc "rasun@paypal.com" -sub "$subject" -bod "$email_text" -a "$imageName"
+        %sendmail -to "yalyan@paypal.com, rasun@paypal.com, fdcc-ops@paypal.com, ausato@paypal.com" -sub "$subject" -bod "$email_text" -a "$imageName"
+#         %sendmail -to "yalyan@paypal.com" -sub "$subject" -bod "$email_text" -a "$imageName"
+    
+        print('yes')
+        print('threshold is')
+        print(threshold)
+        print(flow['alert_name'])
+        print(y1[0:15])
+        print('Valley for {}. Email sent.'.format(flow['alert_name']))
+        print(' ')
+        
+    else:
+        print('no')
+        print(threshold)
+        print(flow['alert_name'])
+        print(y1[0:15])
+        print('NO valley for {}. No email to sent.'.format(flow['alert_name'])) 
+        print(' ')
+
+
+
